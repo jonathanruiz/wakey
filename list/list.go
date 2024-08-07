@@ -2,6 +2,7 @@ package list
 
 import (
 	"fmt"
+	"wakey/device"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -37,6 +38,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Check which key was pressed
 		switch msg.String() {
+
+		// Create new device
+		case "n":
+			return device.InitialModel(), nil
 
 		// These keys should exit the program.
 		case "ctrl+c", "q":
@@ -95,6 +100,7 @@ func (m Model) View() string {
 	}
 
 	// The footer
+	s += "\nPress n to add new device."
 	s += "\nPress q to quit.\n"
 
 	// Send the UI for rendering
