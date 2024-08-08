@@ -9,16 +9,17 @@ import (
 )
 
 type Model struct {
+	viewport viewport.Model
 	choices  []string         // list of devices to wake
 	cursor   int              // which device is selected
 	selected map[int]struct{} // which devices are selected
-	viewport viewport.Model
 }
 
 func InitialModel() tea.Model {
 	vp := viewport.New(20, 10) // Adjust width and height as needed
 
 	return Model{
+		viewport: vp,
 		// A list of devices to wake. This could be fetched from a database or config file
 		choices: []string{"Johnny's PC", "Alex's PC", "pve1"},
 		cursor:  0,
@@ -26,7 +27,6 @@ func InitialModel() tea.Model {
 		// the  map like a mathematical set. The keys refer to the indexes
 		// of the `choices` slice, above.
 		selected: make(map[int]struct{}),
-		viewport: vp,
 	}
 }
 

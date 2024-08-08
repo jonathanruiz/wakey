@@ -7,10 +7,10 @@ import (
 )
 
 type Model struct {
+	viewport     viewport.Model
 	textInput    textinput.Model
 	err          error
 	switchToList func() tea.Model
-	viewport     viewport.Model
 }
 
 type (
@@ -18,19 +18,20 @@ type (
 )
 
 func InitialModel(switchToList func() tea.Model) Model {
+	vp := viewport.New(20, 10) // Adjust width and height as needed
+
+	// Create a new text input field
 	ti := textinput.New()
 	ti.Placeholder = "PC Name"
 	ti.Focus()
 	ti.CharLimit = 156
 	ti.Width = 20
 
-	vp := viewport.New(20, 10) // Adjust width and height as needed
-
 	return Model{
+		viewport:     vp,
 		textInput:    ti,
 		err:          nil,
 		switchToList: switchToList,
-		viewport:     vp,
 	}
 }
 
