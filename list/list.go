@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"wakey/device"
 
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -11,17 +12,21 @@ type Model struct {
 	choices  []string         // list of devices to wake
 	cursor   int              // which device is selected
 	selected map[int]struct{} // which devices are selected
+	viewport viewport.Model
 }
 
 func InitialModel() tea.Model {
+	vp := viewport.New(20, 10) // Adjust width and height as needed
+
 	return Model{
 		// A list of devices to wake. This could be fetched from a database or config file
 		choices: []string{"Johnny's PC", "Alex's PC", "pve1"},
-
+		cursor:  0,
 		// A map which indicates which choices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
 		// of the `choices` slice, above.
 		selected: make(map[int]struct{}),
+		viewport: vp,
 	}
 }
 
@@ -104,5 +109,6 @@ func (m Model) View() string {
 	s += "\nPress q to quit.\n"
 
 	// Send the UI for rendering
+	s += "\n" + m.viewport.View()
 	return s
 }

@@ -2,6 +2,7 @@ package device
 
 import (
 	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -9,6 +10,7 @@ type Model struct {
 	textInput    textinput.Model
 	err          error
 	switchToList func() tea.Model
+	viewport     viewport.Model
 }
 
 type (
@@ -22,10 +24,13 @@ func InitialModel(switchToList func() tea.Model) Model {
 	ti.CharLimit = 156
 	ti.Width = 20
 
+	vp := viewport.New(20, 10) // Adjust width and height as needed
+
 	return Model{
 		textInput:    ti,
 		err:          nil,
 		switchToList: switchToList,
+		viewport:     vp,
 	}
 }
 
@@ -66,5 +71,6 @@ func (m Model) View() string {
 	s += "\nPress esc to cancel."
 	s += "\nPress q to quit.\n"
 
+	s += "\n" + m.viewport.View()
 	return s
 }
