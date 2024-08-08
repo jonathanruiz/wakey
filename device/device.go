@@ -1,14 +1,32 @@
 package device
 
 import (
+	"fmt"
+
+	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+)
+
+var (
+	focusedStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	blurredStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+	cursorStyle         = focusedStyle
+	noStyle             = lipgloss.NewStyle()
+	helpStyle           = blurredStyle
+	cursorModeHelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
+
+	focusedButton = focusedStyle.Render("[ Submit ]")
+	blurredButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Submit"))
 )
 
 type Model struct {
 	viewport     viewport.Model
-	textInput    textinput.Model
+	focusIndex   int
+	inputs       []textinput.Model
+	cursorMode   cursor.Mode
 	err          error
 	switchToList func() tea.Model
 }
@@ -20,19 +38,38 @@ type (
 func InitialModel(switchToList func() tea.Model) Model {
 	vp := viewport.New(20, 10) // Adjust width and height as needed
 
-	// Create a new text input field
-	ti := textinput.New()
-	ti.Placeholder = "Enter a new device name"
-	ti.Focus()
-	ti.CharLimit = 156
-	ti.Width = 20
-
-	return Model{
+	m := Model{
 		viewport:     vp,
-		textInput:    ti,
 		err:          nil,
 		switchToList: switchToList,
+		inputs:       make([]textinput.Model, 4), // Initialize the slice with length 4
 	}
+
+	var ti textinput.Model
+	for i := range m.inputs {
+		ti = textinput.New()
+		ti.Cursor.Style = cursorStyle
+		ti.CharLimit = 64
+
+		switch i {
+		case 0:
+			ti.Placeholder = "Enter the device name"
+			ti.Focus()
+			ti.PromptStyle = focusedStyle
+			ti.TextStyle = focusedStyle
+		case 1:
+			ti.Placeholder = "Enter a description for the device"
+		case 2:
+			ti.Placeholder = "Enter the MAC address"
+		case 3:
+			ti.Placeholder = "Enter the IP address"
+		}
+
+		// Add the textinput model to the slice
+		m.inputs[i] = ti
+	}
+
+	return m
 }
 
 func (m Model) Init() tea.Cmd {
@@ -40,18 +77,67 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
 
-		case tea.KeyEnter:
-			return m.switchToList(), nil
 		case tea.KeyEsc:
 			return m.switchToList(), nil
 		case tea.KeyCtrlC:
 			return m, tea.Quit
+
+		// Change cursor mode
+		case tea.KeyCtrlR:
+			m.cursorMode++
+			if m.cursorMode > cursor.CursorHide {
+				m.cursorMode = cursor.CursorBlink
+			}
+			cmds := make([]tea.Cmd, len(m.inputs))
+			for i := range m.inputs {
+				cmds[i] = m.inputs[i].Cursor.SetMode(m.cursorMode)
+			}
+			return m, tea.Batch(cmds...)
+
+		// Set focus to next input
+		case tea.KeyTab, tea.KeyShiftTab, tea.KeyEnter, tea.KeyDown, tea.KeyUp:
+			s := msg.String()
+
+			// Did the user press enter while the submit button was focused?
+			// If so, exit.
+			if s == "enter" && m.focusIndex == len(m.inputs) {
+				return m, tea.Quit
+			}
+
+			// Cycle indexes
+			if s == "up" || s == "shift+tab" {
+				m.focusIndex--
+			} else {
+				m.focusIndex++
+			}
+
+			if m.focusIndex > len(m.inputs) {
+				m.focusIndex = 0
+			} else if m.focusIndex < 0 {
+				m.focusIndex = len(m.inputs)
+			}
+
+			cmds := make([]tea.Cmd, len(m.inputs))
+			for i := 0; i <= len(m.inputs)-1; i++ {
+				if i == m.focusIndex {
+					// Set focused state
+					cmds[i] = m.inputs[i].Focus()
+					m.inputs[i].PromptStyle = focusedStyle
+					m.inputs[i].TextStyle = focusedStyle
+					continue
+				}
+				// Remove focused state
+				m.inputs[i].Blur()
+				m.inputs[i].PromptStyle = noStyle
+				m.inputs[i].TextStyle = noStyle
+			}
+
+			return m, tea.Batch(cmds...)
 		}
 
 	case errMsg:
@@ -59,17 +145,47 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	m.textInput, cmd = m.textInput.Update(msg)
+	// Handle character input and blinking
+	cmd := m.updateInputs(msg)
+
 	return m, cmd
 
+}
+
+func (m *Model) updateInputs(msg tea.Msg) tea.Cmd {
+	cmds := make([]tea.Cmd, len(m.inputs))
+
+	// Only text inputs with Focus() set will respond, so it's safe to simply
+	// update all of them here without any further logic.
+	for i := range m.inputs {
+		m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
+	}
+
+	return tea.Batch(cmds...)
 }
 
 func (m Model) View() string {
 	// The header
 	s := "New Device\n\n"
-	s += m.textInput.View() + "\n"
-	s += "\nPress esc to cancel."
 
-	s += "\n" + m.viewport.View()
+	// Add the text input fields
+	for _, input := range m.inputs {
+		s += input.View() + "\n"
+	}
+
+	button := &blurredButton
+	if m.focusIndex == len(m.inputs) {
+		button = &focusedButton
+	}
+	s += fmt.Sprintf("\n\n%s\n\n", *button)
+
+	s += helpStyle.Render("cursor mode is ")
+	s += cursorModeHelpStyle.Render(m.cursorMode.String())
+	s += helpStyle.Render(" (ctrl+r to change style)")
+	s += helpStyle.Render("\nPress esc to return to the list")
+
+	s += m.viewport.View()
+
 	return s
+
 }
