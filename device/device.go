@@ -16,6 +16,7 @@ var (
 	blurredButton = fmt.Sprintf("[ %s ]", style.BlurredStyle.Render("Submit"))
 )
 
+// Model is the model for the Device component
 type Model struct {
 	viewport      viewport.Model
 	focusIndex    int
@@ -31,6 +32,7 @@ type (
 	errMsg error
 )
 
+// InitialModel returns the initial model for the Device component
 func InitialModel(switchToList func() tea.Model, addChoice func(string)) Model {
 	vp := viewport.New(20, 10) // Adjust width and height as needed
 
@@ -70,10 +72,12 @@ func InitialModel(switchToList func() tea.Model, addChoice func(string)) Model {
 	return m
 }
 
+// Update function for the Device model
 func (m Model) Init() tea.Cmd {
 	return textinput.Blink
 }
 
+// Update function for the Device model
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
@@ -99,13 +103,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Set focus to next input
 		case tea.KeyTab, tea.KeyShiftTab, tea.KeyEnter, tea.KeyDown, tea.KeyUp:
-			s := msg.String()
 
-			// Did the user press enter while the submit button was focused?
-			// If so, exit.
-			if s == "enter" && m.focusIndex == len(m.inputs) {
+			// Check if the user pressed enter with the submit button focused
+			if msg.Type == tea.KeyEnter && m.focusIndex == len(m.inputs) {
 				if m.focusIndex == len(m.inputs) {
-
 					// Append the device to the config
 					updatedDevices := append(m.currentConfig.Devices, m.inputs[0].Value())
 
@@ -123,18 +124,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			// Cycle indexes
-			if s == "up" || s == "shift+tab" {
+			if msg.Type == tea.KeyUp || msg.Type == tea.KeyShiftTab {
 				m.focusIndex--
 			} else {
 				m.focusIndex++
 			}
 
+			// Wrap around
 			if m.focusIndex > len(m.inputs) {
 				m.focusIndex = 0
 			} else if m.focusIndex < 0 {
 				m.focusIndex = len(m.inputs)
 			}
 
+			// Set focus to the input
 			cmds := make([]tea.Cmd, len(m.inputs))
 			for i := 0; i <= len(m.inputs)-1; i++ {
 				if i == m.focusIndex {
@@ -165,6 +168,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 }
 
+// updateInputs updates all the text inputs in the Device model.
 func (m *Model) updateInputs(msg tea.Msg) tea.Cmd {
 	cmds := make([]tea.Cmd, len(m.inputs))
 
@@ -177,6 +181,7 @@ func (m *Model) updateInputs(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
+// View function for the Device model
 func (m Model) View() string {
 	// The header
 	s := "New Device\n\n"
