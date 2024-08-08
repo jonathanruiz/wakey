@@ -87,6 +87,30 @@ func ReadConfig() Config {
 	return config
 }
 
+// Write the config to the config file.
+func WriteConfig(config Config) {
+	// Marshal the config to JSON
+	data, err := json.MarshalIndent(config, "", "  ")
+
+	// Check if we got an error
+	if err != nil {
+		fmt.Println("Error marshalling config:", err)
+		return
+	}
+
+	// Write the config to the file
+	err = os.WriteFile(ConfigPath, data, 0644)
+
+	// Check if we got an error
+	if err != nil {
+		fmt.Println("Error writing config file:", err)
+		return
+	}
+
+	// Print a message to the user
+	fmt.Println("Config file updated at", ConfigPath)
+}
+
 /*
 Convert the config to a JSON string.
 

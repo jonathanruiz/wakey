@@ -2,6 +2,7 @@ package device
 
 import (
 	"fmt"
+	"wakey/config"
 	"wakey/style"
 
 	"github.com/charmbracelet/bubbles/cursor"
@@ -16,13 +17,14 @@ var (
 )
 
 type Model struct {
-	viewport     viewport.Model
-	focusIndex   int
-	inputs       []textinput.Model
-	cursorMode   cursor.Mode
-	err          error
-	switchToList func() tea.Model
-	addChoice    func(string)
+	viewport      viewport.Model
+	focusIndex    int
+	inputs        []textinput.Model
+	cursorMode    cursor.Mode
+	err           error
+	switchToList  func() tea.Model
+	addChoice     func(string)
+	currentConfig config.Config
 }
 
 type (
@@ -33,11 +35,12 @@ func InitialModel(switchToList func() tea.Model, addChoice func(string)) Model {
 	vp := viewport.New(20, 10) // Adjust width and height as needed
 
 	m := Model{
-		viewport:     vp,
-		err:          nil,
-		switchToList: switchToList,
-		addChoice:    addChoice,
-		inputs:       make([]textinput.Model, 4), // Initialize the slice with length 4
+		viewport:      vp,
+		err:           nil,
+		switchToList:  switchToList,
+		addChoice:     addChoice,
+		inputs:        make([]textinput.Model, 4), // Initialize the slice with length 4
+		currentConfig: config.ReadConfig(),
 	}
 
 	var ti textinput.Model
@@ -102,8 +105,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// If so, exit.
 			if s == "enter" && m.focusIndex == len(m.inputs) {
 				if m.focusIndex == len(m.inputs) {
-					deviceName := m.inputs[0].Value()
-					m.addChoice(deviceName)
+
+					// Append the device to the config
+					updatedDevices := append(m.currentConfig.Devices, m.inputs[0].Value())
+
+					// Create a new config with the updated devices
+					updatedConfig := config.Config{
+						Devices: updatedDevices,
+					}
+
+					// Write the the new version of the config to the file
+					config.WriteConfig(updatedConfig)
+
+					// Return to the list
 					return m.switchToList(), nil
 				}
 			}
