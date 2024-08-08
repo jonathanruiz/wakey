@@ -6,15 +6,16 @@ import (
 )
 
 type Model struct {
-	textInput textinput.Model
-	err       error
+	textInput    textinput.Model
+	err          error
+	switchToList func() tea.Model
 }
 
 type (
 	errMsg error
 )
 
-func InitialModel() tea.Model {
+func InitialModel(switchToList func() tea.Model) Model {
 	ti := textinput.New()
 	ti.Placeholder = "PC Name"
 	ti.Focus()
@@ -22,8 +23,9 @@ func InitialModel() tea.Model {
 	ti.Width = 20
 
 	return Model{
-		textInput: ti,
-		err:       nil,
+		textInput:    ti,
+		err:          nil,
+		switchToList: switchToList,
 	}
 }
 
@@ -37,7 +39,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
-		case tea.KeyEnter, tea.KeyCtrlC, tea.KeyEsc:
+
+		case tea.KeyEnter:
+			return m.switchToList(), nil
+		case tea.KeyEsc:
+			return m.switchToList(), nil
+		case tea.KeyCtrlC:
 			return m, tea.Quit
 		}
 

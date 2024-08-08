@@ -41,7 +41,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Create new device
 		case "n":
-			return device.InitialModel(), nil
+			return device.InitialModel(func() tea.Model { return m }), nil
 
 		// These keys should exit the program.
 		case "ctrl+c", "q":
