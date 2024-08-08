@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+
 	p := tea.NewProgram(list.InitialModel())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error: %v", err)

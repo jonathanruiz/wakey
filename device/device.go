@@ -2,24 +2,17 @@ package device
 
 import (
 	"fmt"
+	"wakey/style"
 
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 var (
-	focusedStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
-	blurredStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
-	cursorStyle         = focusedStyle
-	noStyle             = lipgloss.NewStyle()
-	helpStyle           = blurredStyle
-	cursorModeHelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
-
-	focusedButton = focusedStyle.Render("[ Submit ]")
-	blurredButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Submit"))
+	focusedButton = style.FocusedStyle.Render("[ Submit ]")
+	blurredButton = fmt.Sprintf("[ %s ]", style.BlurredStyle.Render("Submit"))
 )
 
 type Model struct {
@@ -48,15 +41,15 @@ func InitialModel(switchToList func() tea.Model) Model {
 	var ti textinput.Model
 	for i := range m.inputs {
 		ti = textinput.New()
-		ti.Cursor.Style = cursorStyle
+		ti.Cursor.Style = style.FocusedStyle
 		ti.CharLimit = 64
 
 		switch i {
 		case 0:
 			ti.Placeholder = "Enter the device name"
 			ti.Focus()
-			ti.PromptStyle = focusedStyle
-			ti.TextStyle = focusedStyle
+			ti.PromptStyle = style.FocusedStyle
+			ti.TextStyle = style.FocusedStyle
 		case 1:
 			ti.Placeholder = "Enter a description for the device"
 		case 2:
@@ -127,14 +120,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if i == m.focusIndex {
 					// Set focused state
 					cmds[i] = m.inputs[i].Focus()
-					m.inputs[i].PromptStyle = focusedStyle
-					m.inputs[i].TextStyle = focusedStyle
+					m.inputs[i].PromptStyle = style.FocusedStyle
+					m.inputs[i].TextStyle = style.FocusedStyle
 					continue
 				}
 				// Remove focused state
 				m.inputs[i].Blur()
-				m.inputs[i].PromptStyle = noStyle
-				m.inputs[i].TextStyle = noStyle
+				m.inputs[i].PromptStyle = style.NoStyle
+				m.inputs[i].TextStyle = style.NoStyle
 			}
 
 			return m, tea.Batch(cmds...)
@@ -179,10 +172,10 @@ func (m Model) View() string {
 	}
 	s += fmt.Sprintf("\n\n%s\n\n", *button)
 
-	s += helpStyle.Render("cursor mode is ")
-	s += cursorModeHelpStyle.Render(m.cursorMode.String())
-	s += helpStyle.Render(" (ctrl+r to change style)")
-	s += helpStyle.Render("\nPress esc to return to the list")
+	s += style.HelpStyle.Render("cursor mode is ")
+	s += style.CursorModeHelpStyle.Render(m.cursorMode.String())
+	s += style.HelpStyle.Render(" (ctrl+r to change style)")
+	s += style.HelpStyle.Render("\nPress esc to return to the list")
 
 	s += m.viewport.View()
 
