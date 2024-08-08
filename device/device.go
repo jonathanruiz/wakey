@@ -22,19 +22,21 @@ type Model struct {
 	cursorMode   cursor.Mode
 	err          error
 	switchToList func() tea.Model
+	addChoice    func(string)
 }
 
 type (
 	errMsg error
 )
 
-func InitialModel(switchToList func() tea.Model) Model {
+func InitialModel(switchToList func() tea.Model, addChoice func(string)) Model {
 	vp := viewport.New(20, 10) // Adjust width and height as needed
 
 	m := Model{
 		viewport:     vp,
 		err:          nil,
 		switchToList: switchToList,
+		addChoice:    addChoice,
 		inputs:       make([]textinput.Model, 4), // Initialize the slice with length 4
 	}
 
@@ -99,7 +101,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Did the user press enter while the submit button was focused?
 			// If so, exit.
 			if s == "enter" && m.focusIndex == len(m.inputs) {
-				return m, tea.Quit
+				if m.focusIndex == len(m.inputs) {
+					deviceName := m.inputs[0].Value()
+					m.addChoice(deviceName)
+					return m.switchToList(), nil
+				}
 			}
 
 			// Cycle indexes

@@ -30,6 +30,10 @@ func InitialModel() tea.Model {
 	}
 }
 
+func (m *Model) AddChoice(choice string) {
+	m.choices = append(m.choices, choice)
+}
+
 func (m Model) Init() tea.Cmd {
 	// Just return `nil`, which means "no I/O right now".
 	return nil
@@ -46,7 +50,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Create new device
 		case "n":
-			return device.InitialModel(func() tea.Model { return m }), nil
+			return device.InitialModel(func() tea.Model { return m }, m.AddChoice), nil
 
 		// These keys should exit the program.
 		case "ctrl+c", "q":
