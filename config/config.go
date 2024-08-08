@@ -87,7 +87,12 @@ func ReadConfig() Config {
 	return config
 }
 
-// Convert the config to a JSON string.
+/*
+Convert the config to a JSON string.
+
+Helpful for debugging and seeing the contents of the config.
+Might not be necessary anymore since `ReadConfig()` returns a `Config` struct as JSON.
+*/
 func (c Config) ConfigToString() string {
 	data, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {

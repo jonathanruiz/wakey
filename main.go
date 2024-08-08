@@ -16,11 +16,9 @@ func main() {
 	config.CreateConfig()
 
 	// Print the contents of the config file
-	data := config.ReadConfig().ConfigToString()
+	data := config.ReadConfig()
 
-	println(string(data))
-
-	p := tea.NewProgram(list.InitialModel())
+	p := tea.NewProgram(list.InitialModel(data))
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error: %v", err)
 		os.Exit(1)

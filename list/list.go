@@ -2,15 +2,12 @@ package list
 
 import (
 	"fmt"
+	"wakey/config"
 	"wakey/device"
 
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 )
-
-type Config struct {
-	Devices []string `json:"devices"`
-}
 
 type Model struct {
 	viewport viewport.Model
@@ -19,14 +16,18 @@ type Model struct {
 	selected map[int]struct{} // which devices are selected
 }
 
-func InitialModel() tea.Model {
+func InitialModel(config config.Config) tea.Model {
 
+	// Create a new viewport
 	vp := viewport.New(20, 10) // Adjust width and height as needed
+
+	// Get devices from config
+	choices := config.Devices
 
 	return Model{
 		viewport: vp,
 		// A list of devices to wake. This could be fetched from a database or config file
-		choices: []string{"Johnny's PC", "Alex's PC", "pve1"},
+		choices: choices,
 		cursor:  0,
 		// A map which indicates which choices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
