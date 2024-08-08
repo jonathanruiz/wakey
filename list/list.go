@@ -8,6 +8,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+type Config struct {
+	Devices []string `json:"devices"`
+}
+
 type Model struct {
 	viewport viewport.Model
 	choices  []string         // list of devices to wake
@@ -16,6 +20,7 @@ type Model struct {
 }
 
 func InitialModel() tea.Model {
+
 	vp := viewport.New(20, 10) // Adjust width and height as needed
 
 	return Model{
