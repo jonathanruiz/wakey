@@ -22,7 +22,7 @@ func InitialModel(switchToList func() tea.Model) Model {
 
 	// Create a new text input field
 	ti := textinput.New()
-	ti.Placeholder = "PC Name"
+	ti.Placeholder = "Enter a new device name"
 	ti.Focus()
 	ti.CharLimit = 156
 	ti.Width = 20
@@ -54,7 +54,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-	// We handle errors just like any other message
 	case errMsg:
 		m.err = msg
 		return m, nil
@@ -70,7 +69,6 @@ func (m Model) View() string {
 	s := "New Device\n\n"
 	s += m.textInput.View() + "\n"
 	s += "\nPress esc to cancel."
-	s += "\nPress q to quit.\n"
 
 	s += "\n" + m.viewport.View()
 	return s
