@@ -7,7 +7,6 @@ import (
 
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
-	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -18,7 +17,6 @@ var (
 
 // Model is the model for the Device component
 type Model struct {
-	viewport      viewport.Model
 	focusIndex    int
 	inputs        []textinput.Model
 	cursorMode    cursor.Mode
@@ -34,10 +32,8 @@ type (
 
 // InitialModel returns the initial model for the Device component
 func InitialModel(switchToList func() tea.Model, addChoice func(string)) Model {
-	vp := viewport.New(20, 10) // Adjust width and height as needed
 
 	m := Model{
-		viewport:      vp,
 		err:           nil,
 		switchToList:  switchToList,
 		addChoice:     addChoice,
@@ -201,8 +197,6 @@ func (m Model) View() string {
 	s += style.CursorModeHelpStyle.Render(m.cursorMode.String())
 	s += style.HelpStyle.Render(" (ctrl+r to change style)")
 	s += style.HelpStyle.Render("\nPress esc to return to the list")
-
-	s += m.viewport.View()
 
 	return s
 
