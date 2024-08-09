@@ -31,12 +31,11 @@ type (
 )
 
 // InitialModel returns the initial model for the Device component
-func InitialModel(switchToList func() tea.Model, addChoice func(string)) Model {
+func InitialModel(switchToList func() tea.Model) Model {
 
 	m := Model{
 		err:           nil,
 		switchToList:  switchToList,
-		addChoice:     addChoice,
 		inputs:        make([]textinput.Model, 4), // Initialize the slice with length 4
 		currentConfig: config.ReadConfig(),
 	}
