@@ -5,12 +5,10 @@ import (
 	"wakey/config"
 	"wakey/device"
 
-	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type Model struct {
-	viewport viewport.Model
 	choices  []string         // list of devices to wake
 	cursor   int              // which device is selected
 	selected map[int]struct{} // which devices are selected
@@ -18,14 +16,10 @@ type Model struct {
 
 func InitialModel() tea.Model {
 
-	// Create a new viewport
-	vp := viewport.New(20, 10) // Adjust width and height as needed
-
 	// Get devices from config
 	choices := config.ReadConfig().Devices
 
 	return Model{
-		viewport: vp,
 		// A list of devices to wake. This could be fetched from a database or config file
 		choices: choices,
 		cursor:  0,
@@ -120,7 +114,5 @@ func (m Model) View() string {
 	s += "\nPress n to add new device."
 	s += "\nPress q to quit.\n"
 
-	// Send the UI for rendering
-	s += "\n" + m.viewport.View()
 	return s
 }
