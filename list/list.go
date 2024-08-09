@@ -16,13 +16,13 @@ type Model struct {
 	selected map[int]struct{} // which devices are selected
 }
 
-func InitialModel(config config.Config) tea.Model {
+func InitialModel() tea.Model {
 
 	// Create a new viewport
 	vp := viewport.New(20, 10) // Adjust width and height as needed
 
 	// Get devices from config
-	choices := config.Devices
+	choices := config.ReadConfig().Devices
 
 	return Model{
 		viewport: vp,
