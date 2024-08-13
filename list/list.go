@@ -2,36 +2,32 @@ package list
 
 import (
 	"fmt"
+	"wakey/config"
 	"wakey/device"
 
-	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type Model struct {
-	viewport viewport.Model
 	choices  []string         // list of devices to wake
 	cursor   int              // which device is selected
 	selected map[int]struct{} // which devices are selected
 }
 
 func InitialModel() tea.Model {
-	vp := viewport.New(20, 10) // Adjust width and height as needed
+
+	// Get devices from config
+	choices := config.ReadConfig().Devices
 
 	return Model{
-		viewport: vp,
 		// A list of devices to wake. This could be fetched from a database or config file
-		choices: []string{"Johnny's PC", "Alex's PC", "pve1"},
+		choices: choices,
 		cursor:  0,
 		// A map which indicates which choices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
 		// of the `choices` slice, above.
 		selected: make(map[int]struct{}),
 	}
-}
-
-func (m *Model) AddChoice(choice string) {
-	m.choices = append(m.choices, choice)
 }
 
 func (m Model) Init() tea.Cmd {
@@ -50,7 +46,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Create new device
 		case "n":
-			return device.InitialModel(func() tea.Model { return m }, m.AddChoice), nil
+			return device.InitialModel(func() tea.Model { return m }), nil
 
 		// These keys should exit the program.
 		case "ctrl+c", "q":
@@ -86,6 +82,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
+	// Get updated config file
+	newConfig := config.ReadConfig()
+
+	// Update the choices with the new config
+	m.choices = newConfig.Devices
+
 	// The header
 	s := "Which device should you wake?\n\n"
 
@@ -112,7 +114,5 @@ func (m Model) View() string {
 	s += "\nPress n to add new device."
 	s += "\nPress q to quit.\n"
 
-	// Send the UI for rendering
-	s += "\n" + m.viewport.View()
 	return s
 }

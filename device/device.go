@@ -2,11 +2,11 @@ package device
 
 import (
 	"fmt"
+	"wakey/config"
 	"wakey/style"
 
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
-	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -15,29 +15,29 @@ var (
 	blurredButton = fmt.Sprintf("[ %s ]", style.BlurredStyle.Render("Submit"))
 )
 
+// Model is the model for the Device component
 type Model struct {
-	viewport     viewport.Model
-	focusIndex   int
-	inputs       []textinput.Model
-	cursorMode   cursor.Mode
-	err          error
-	switchToList func() tea.Model
-	addChoice    func(string)
+	focusIndex    int
+	inputs        []textinput.Model
+	cursorMode    cursor.Mode
+	err           error
+	switchToList  func() tea.Model
+	addChoice     func(string)
+	currentConfig config.Config
 }
 
 type (
 	errMsg error
 )
 
-func InitialModel(switchToList func() tea.Model, addChoice func(string)) Model {
-	vp := viewport.New(20, 10) // Adjust width and height as needed
+// InitialModel returns the initial model for the Device component
+func InitialModel(switchToList func() tea.Model) Model {
 
 	m := Model{
-		viewport:     vp,
-		err:          nil,
-		switchToList: switchToList,
-		addChoice:    addChoice,
-		inputs:       make([]textinput.Model, 4), // Initialize the slice with length 4
+		err:           nil,
+		switchToList:  switchToList,
+		inputs:        make([]textinput.Model, 4), // Initialize the slice with length 4
+		currentConfig: config.ReadConfig(),
 	}
 
 	var ti textinput.Model
@@ -67,10 +67,12 @@ func InitialModel(switchToList func() tea.Model, addChoice func(string)) Model {
 	return m
 }
 
+// Update function for the Device model
 func (m Model) Init() tea.Cmd {
 	return textinput.Blink
 }
 
+// Update function for the Device model
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
@@ -96,31 +98,41 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Set focus to next input
 		case tea.KeyTab, tea.KeyShiftTab, tea.KeyEnter, tea.KeyDown, tea.KeyUp:
-			s := msg.String()
 
-			// Did the user press enter while the submit button was focused?
-			// If so, exit.
-			if s == "enter" && m.focusIndex == len(m.inputs) {
+			// Check if the user pressed enter with the submit button focused
+			if msg.Type == tea.KeyEnter && m.focusIndex == len(m.inputs) {
 				if m.focusIndex == len(m.inputs) {
-					deviceName := m.inputs[0].Value()
-					m.addChoice(deviceName)
+					// Append the device to the config
+					updatedDevices := append(m.currentConfig.Devices, m.inputs[0].Value())
+
+					// Create a new config with the updated devices
+					updatedConfig := config.Config{
+						Devices: updatedDevices,
+					}
+
+					// Write the the new version of the config to the file
+					config.WriteConfig(updatedConfig)
+
+					// Return to the list
 					return m.switchToList(), nil
 				}
 			}
 
 			// Cycle indexes
-			if s == "up" || s == "shift+tab" {
+			if msg.Type == tea.KeyUp || msg.Type == tea.KeyShiftTab {
 				m.focusIndex--
 			} else {
 				m.focusIndex++
 			}
 
+			// Wrap around
 			if m.focusIndex > len(m.inputs) {
 				m.focusIndex = 0
 			} else if m.focusIndex < 0 {
 				m.focusIndex = len(m.inputs)
 			}
 
+			// Set focus to the input
 			cmds := make([]tea.Cmd, len(m.inputs))
 			for i := 0; i <= len(m.inputs)-1; i++ {
 				if i == m.focusIndex {
@@ -151,6 +163,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 }
 
+// updateInputs updates all the text inputs in the Device model.
 func (m *Model) updateInputs(msg tea.Msg) tea.Cmd {
 	cmds := make([]tea.Cmd, len(m.inputs))
 
@@ -163,6 +176,7 @@ func (m *Model) updateInputs(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
+// View function for the Device model
 func (m Model) View() string {
 	// The header
 	s := "New Device\n\n"
@@ -182,8 +196,6 @@ func (m Model) View() string {
 	s += style.CursorModeHelpStyle.Render(m.cursorMode.String())
 	s += style.HelpStyle.Render(" (ctrl+r to change style)")
 	s += style.HelpStyle.Render("\nPress esc to return to the list")
-
-	s += m.viewport.View()
 
 	return s
 
