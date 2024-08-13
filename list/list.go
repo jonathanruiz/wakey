@@ -15,7 +15,6 @@ type Model struct {
 }
 
 func InitialModel() tea.Model {
-
 	// Get devices from config
 	choices := config.ReadConfig().Devices
 

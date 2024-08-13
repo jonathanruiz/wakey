@@ -22,7 +22,6 @@ type Model struct {
 	cursorMode    cursor.Mode
 	err           error
 	switchToList  func() tea.Model
-	addChoice     func(string)
 	currentConfig config.Config
 }
 
