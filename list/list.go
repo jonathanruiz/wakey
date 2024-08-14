@@ -35,6 +35,9 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// Get devices from config
+	m.choices = config.ReadConfig().Devices
+
 	switch msg := msg.(type) {
 
 	// Check if it was a key press
