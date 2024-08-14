@@ -1,13 +1,13 @@
 package list
 
 import (
-	"fmt"
 	"wakey/config"
 	"wakey/device"
 	"wakey/style"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -17,8 +17,6 @@ import (
 type keyMap struct {
 	Up    key.Binding
 	Down  key.Binding
-	Left  key.Binding
-	Right key.Binding
 	Enter key.Binding
 	New   key.Binding
 	Help  key.Binding
@@ -35,9 +33,9 @@ func (k keyMap) ShortHelp() []key.Binding {
 // key.Map interface.
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down, k.Left, k.Right}, // first column
-		{k.Enter, k.New},                // second column
-		{k.Help, k.Quit},                // third column
+		{k.Up, k.Down},   // first column
+		{k.Enter, k.New}, // second column
+		{k.Help, k.Quit}, // third column
 	}
 }
 
@@ -50,17 +48,9 @@ var keys = keyMap{
 		key.WithKeys("down", "j"),
 		key.WithHelp("↓/j", "move down"),
 	),
-	Left: key.NewBinding(
-		key.WithKeys("left", "h"),
-		key.WithHelp("←/h", "move left"),
-	),
-	Right: key.NewBinding(
-		key.WithKeys("right", "l"),
-		key.WithHelp("→/l", "move right"),
-	),
 	Enter: key.NewBinding(
-		key.WithKeys("enter", " "),
-		key.WithHelp("enter/space", "toggle select"),
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "toggle select"),
 	),
 	New: key.NewBinding(
 		key.WithKeys("n"),
@@ -77,29 +67,49 @@ var keys = keyMap{
 }
 
 type Model struct {
-	choices    []string         // list of devices to wake
-	cursor     int              // which device is selected
-	selected   map[int]struct{} // which devices are selected
+	choices    []string // list of devices to wake
 	keys       keyMap
 	help       help.Model
 	inputStyle lipgloss.Style
+	table      table.Model
 }
 
 func InitialModel() tea.Model {
 	// Get devices from config
 	choices := config.ReadConfig().Devices
 
+	// Define table columns
+	columns := []table.Column{
+		{Title: "Device", Width: 20},
+		{Title: "Description", Width: 30},
+		{Title: "MAC Address", Width: 20},
+		{Title: "IP Address", Width: 15},
+	}
+
+	// Define table rows
+	rows := make([]table.Row, len(choices))
+	for i, device := range choices {
+		rows[i] = table.Row{
+			device,
+		}
+	}
+
+	// Create the table model
+	t := table.New(
+		table.WithColumns(columns),
+		table.WithRows(rows),
+		table.WithFocused(true),
+	)
+
 	return Model{
 		// A list of devices to wake. This could be fetched from a database or config file
 		choices: choices,
-		cursor:  0,
 		// A map which indicates which choices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
 		// of the `choices` slice, above.
-		selected:   make(map[int]struct{}),
-		keys:       keys,
-		help:       help.New(),
-		inputStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("#FF75B7")),
+		keys:  keys,
+		help:  help.New(),
+		table: t,
 	}
 }
 
@@ -109,6 +119,8 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+
 	// Get devices from config
 	m.choices = config.ReadConfig().Devices
 
@@ -128,67 +140,38 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
 
-		// The "up" and "k" keys move the cursor up
-		case key.Matches(msg, m.keys.Up):
-			if m.cursor > 0 {
-				m.cursor--
-			}
-
-		// The "down" and "j" keys move the cursor down
-		case key.Matches(msg, m.keys.Down):
-			if m.cursor < len(m.choices)-1 {
-				m.cursor++
-			}
-
-		// The "enter" key and the spacebar toggle
-		// the selected state for the item that the cursor is pointing at.
-		case key.Matches(msg, m.keys.Enter):
-			_, ok := m.selected[m.cursor]
-			if ok {
-				delete(m.selected, m.cursor)
-			} else {
-				m.selected[m.cursor] = struct{}{}
-			}
-
 		// Toggle help
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
 		}
 	}
 
-	// Return the updated Model to the Bubble Tea runtime for processing.
-	// Note that we're not returning a command.
-	return m, nil
+	// Update the table
+	newTable, cmd := m.table.Update(msg)
+	m.table = newTable
+	cmds = append(cmds, cmd)
+
+	return m, tea.Batch(cmds...)
 }
 
 func (m Model) View() string {
 	// Get updated config file
 	newConfig := config.ReadConfig()
 
-	// Update the choices with the new config
-	m.choices = newConfig.Devices
+	// Convert m.choices from []string to []table.Row
+	var rows []table.Row
+	for _, choice := range newConfig.Devices {
+		rows = append(rows, table.Row{choice})
+	}
+
+	// Update the table with the new rows
+	m.table.SetRows(rows)
 
 	// The header
 	s := style.TitleStyle.Render("Which device should you wake?") + "\n\n"
 
-	// Iterate over our choices
-	for i, choice := range m.choices {
-
-		// Is the cursor pointing at this choice?
-		cursor := " " // no cursor
-		if m.cursor == i {
-			cursor = style.CursorStyle.Render(">")
-		}
-
-		// Is this choice selected?
-		checked := " " // not selected
-		if _, ok := m.selected[i]; ok {
-			checked = style.CursorStyle.Render("x")
-		}
-
-		// Render the row
-		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
-	}
+	// Render the table
+	s += m.table.View() + "\n"
 
 	// Help text
 	s += m.help.View(m.keys)
