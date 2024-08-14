@@ -103,6 +103,15 @@ func InitialModel() tea.Model {
 		table.WithFocused(true),
 	)
 
+	// Get the default table styles
+	s := style.DefaultTableStyles()
+
+	// Set the styles
+	t.SetStyles(table.Styles{
+		Header:   s.Header,
+		Selected: s.Selected,
+	})
+
 	return Model{
 		// A list of devices to wake. This could be fetched from a database or config file
 		choices: choices,
@@ -176,7 +185,7 @@ func (m Model) View() string {
 	s += m.table.View() + "\n"
 
 	// Show device count
-	s += style.TitleStyle.Render("Number of devices: "+strconv.Itoa(len(m.table.Rows()))) + "\n\n" // srtconv.Itoa converts int to string
+	s += style.DeviceCountStyle.Render("Number of devices: "+strconv.Itoa(len(m.table.Rows()))) + "\n\n" // srtconv.Itoa converts int to string
 
 	// Help text
 	s += m.help.View(m.keys)
