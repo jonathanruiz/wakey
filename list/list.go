@@ -1,6 +1,7 @@
 package list
 
 import (
+	"strconv"
 	"wakey/config"
 	"wakey/device"
 	"wakey/style"
@@ -9,7 +10,6 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 // keyMap defines a set of keybindings. To work for help it must satisfy
@@ -39,6 +39,7 @@ func (k keyMap) FullHelp() [][]key.Binding {
 	}
 }
 
+// Keybindings for the Device component
 var keys = keyMap{
 	Up: key.NewBinding(
 		key.WithKeys("up", "k"),
@@ -66,14 +67,15 @@ var keys = keyMap{
 	),
 }
 
+// Model for the Device component
 type Model struct {
-	choices    []string // list of devices to wake
-	keys       keyMap
-	help       help.Model
-	inputStyle lipgloss.Style
-	table      table.Model
+	choices []string // list of devices to wake
+	keys    keyMap
+	help    help.Model
+	table   table.Model
 }
 
+// InitialModel function for the Device model
 func InitialModel() tea.Model {
 	// Get devices from config
 	choices := config.ReadConfig().Devices
@@ -113,25 +115,24 @@ func InitialModel() tea.Model {
 	}
 }
 
-func (m Model) Init() tea.Cmd {
-	// Just return `nil`, which means "no I/O right now".
-	return nil
-}
+// Init function for the Device model
+func (m Model) Init() tea.Cmd { return nil }
 
+// Update function for the Device model
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
-	// Get devices from config
-	m.choices = config.ReadConfig().Devices
+	// Get new number of rows
+	rows := make([]table.Row, len(config.ReadConfig().Devices))
+
+	// Update the table with the new rows
+	m.table.SetRows(rows)
 
 	switch msg := msg.(type) {
-
 	// Check if it was a key press
 	case tea.KeyMsg:
-
 		// Check which key was pressed
 		switch {
-
 		// Create new device
 		case key.Matches(msg, m.keys.New):
 			return device.InitialModel(func() tea.Model { return m }), nil
@@ -154,6 +155,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
+// View function for the Device model
 func (m Model) View() string {
 	// Get updated config file
 	newConfig := config.ReadConfig()
@@ -172,6 +174,9 @@ func (m Model) View() string {
 
 	// Render the table
 	s += m.table.View() + "\n"
+
+	// Show device count
+	s += style.TitleStyle.Render("Number of devices: "+strconv.Itoa(len(m.table.Rows()))) + "\n\n" // srtconv.Itoa converts int to string
 
 	// Help text
 	s += m.help.View(m.keys)
