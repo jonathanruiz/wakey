@@ -112,8 +112,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					// Write the the new version of the config to the file
 					config.WriteConfig(updatedConfig)
 
-					// Return to the list
-					return m.switchToList(), nil
+					// Return to the list and clear the screen
+					return m.switchToList(), func() tea.Msg {
+						return tea.ClearScreen()
+					}
 				}
 			}
 
