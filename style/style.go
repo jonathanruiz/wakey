@@ -13,7 +13,7 @@ type Style struct {
 }
 
 var (
-	FocusedStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	FocusedStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("156"))
 	BlurredStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
 	CursorStyle         = FocusedStyle
 	NoStyle             = lipgloss.NewStyle()
