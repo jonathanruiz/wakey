@@ -31,13 +31,13 @@ func DefaultTableStyles() TableStyles {
 			Foreground(lipgloss.Color("98")),
 		Selected: lipgloss.NewStyle().
 			Foreground(lipgloss.Color("229")).
-			Background(lipgloss.Color("57")).
+			Background(lipgloss.Color("98")).
 			Bold(false),
 	}
 }
 
 var (
-	FocusedStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#a6e3a1"))
+	FocusedStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("98"))
 	BlurredStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
 	CursorStyle         = FocusedStyle
 	NoStyle             = lipgloss.NewStyle()
