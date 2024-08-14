@@ -169,14 +169,13 @@ func (m Model) View() string {
 	m.choices = newConfig.Devices
 
 	// The header
-	s := "Which device should you wake?\n\n"
+	s := style.TitleStyle.Render("Which device should you wake?") + "\n\n"
 
 	// Iterate over our choices
 	for i, choice := range m.choices {
 
 		// Is the cursor pointing at this choice?
 		cursor := " " // no cursor
-
 		if m.cursor == i {
 			cursor = style.CursorStyle.Render(">")
 		}
@@ -184,17 +183,15 @@ func (m Model) View() string {
 		// Is this choice selected?
 		checked := " " // not selected
 		if _, ok := m.selected[i]; ok {
-			checked = style.CursorStyle.Render("x") // selected!
+			checked = style.CursorStyle.Render("x")
 		}
 
 		// Render the row
 		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
 	}
 
-	// The footer
+	// Help text
 	s += m.help.View(m.keys)
-	// s += "\nPress n to add new device."
-	// s += "\nPress q to quit.\n"
 
 	return s
 }

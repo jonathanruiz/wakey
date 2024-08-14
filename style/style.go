@@ -10,6 +10,7 @@ type Style struct {
 	noStyle             lipgloss.Style
 	helpStyle           lipgloss.Style
 	cursorModeHelpStyle lipgloss.Style
+	titleStyle          lipgloss.Style
 }
 
 var (
@@ -19,4 +20,5 @@ var (
 	NoStyle             = lipgloss.NewStyle()
 	HelpStyle           = BlurredStyle
 	CursorModeHelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
+	TitleStyle          = lipgloss.NewStyle().Bold(true)
 )
