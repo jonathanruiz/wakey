@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	focusedButton = style.FocusedStyle.Render("[ Submit ]")
-	blurredButton = fmt.Sprintf("[ %s ]", style.BlurredStyle.Render("Submit"))
+	focusedButton = style.FocusedStyle.Render("[ Submit ]")                    // The focused button
+	blurredButton = fmt.Sprintf("[ %s ]", style.BlurredStyle.Render("Submit")) // The blurred button
 )
 
 // Model is the model for the Device component
@@ -22,7 +22,6 @@ type Model struct {
 	cursorMode    cursor.Mode
 	err           error
 	switchToList  func() tea.Model
-	addChoice     func(string)
 	currentConfig config.Config
 }
 
@@ -40,22 +39,29 @@ func InitialModel(switchToList func() tea.Model) Model {
 		currentConfig: config.ReadConfig(),
 	}
 
+	// Create a new text input model for each input field
 	var ti textinput.Model
+
+	// Loop through the inputs and create a new text input model for each
 	for i := range m.inputs {
 		ti = textinput.New()
 		ti.Cursor.Style = style.FocusedStyle
 		ti.CharLimit = 64
 
 		switch i {
+		// Device name
 		case 0:
 			ti.Placeholder = "Enter the device name"
 			ti.Focus()
 			ti.PromptStyle = style.FocusedStyle
 			ti.TextStyle = style.FocusedStyle
+		// Description
 		case 1:
 			ti.Placeholder = "Enter a description for the device"
+		// MAC address
 		case 2:
 			ti.Placeholder = "Enter the MAC address"
+		// IP address
 		case 3:
 			ti.Placeholder = "Enter the IP address"
 		}
@@ -78,12 +84,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
-
+		// Return to the list
 		case tea.KeyEsc:
 			return m.switchToList(), nil
+		// Exit the program
 		case tea.KeyCtrlC:
 			return m, tea.Quit
-
 		// Change cursor mode
 		case tea.KeyCtrlR:
 			m.cursorMode++
@@ -95,10 +101,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				cmds[i] = m.inputs[i].Cursor.SetMode(m.cursorMode)
 			}
 			return m, tea.Batch(cmds...)
-
 		// Set focus to next input
 		case tea.KeyTab, tea.KeyShiftTab, tea.KeyEnter, tea.KeyDown, tea.KeyUp:
-
 			// Check if the user pressed enter with the submit button focused
 			if msg.Type == tea.KeyEnter && m.focusIndex == len(m.inputs) {
 				if m.focusIndex == len(m.inputs) {
@@ -113,8 +117,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					// Write the the new version of the config to the file
 					config.WriteConfig(updatedConfig)
 
-					// Return to the list
-					return m.switchToList(), nil
+					// Return to the list and clear the screen
+					return m.switchToList(), func() tea.Msg {
+						return tea.ClearScreen()
+					}
 				}
 			}
 

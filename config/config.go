@@ -7,13 +7,14 @@ import (
 	"path/filepath"
 )
 
+// Config struct for the config file.
 type Config struct {
 	Devices []string `json:"devices"`
 }
 
 var (
-	HomeDir, HomeDirErr = os.UserHomeDir()
-	ConfigPath          = filepath.Join(HomeDir, ".wakey_config.json")
+	HomeDir, HomeDirErr = os.UserHomeDir()                             // Get the users home directory
+	ConfigPath          = filepath.Join(HomeDir, ".wakey_config.json") // Create the path to the config file
 )
 
 // Create a config file if it doesn't exist in the users home directory.
