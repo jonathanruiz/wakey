@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"wakey/config"
 	"wakey/device"
+	"wakey/style"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -98,14 +99,15 @@ func (m Model) View() string {
 
 		// Is the cursor pointing at this choice?
 		cursor := " " // no cursor
+
 		if m.cursor == i {
-			cursor = ">" // cursor!
+			cursor = style.CursorStyle.Render(">")
 		}
 
 		// Is this choice selected?
 		checked := " " // not selected
 		if _, ok := m.selected[i]; ok {
-			checked = "x" // selected!
+			checked = style.CursorStyle.Render("x") // selected!
 		}
 
 		// Render the row
