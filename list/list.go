@@ -175,6 +175,9 @@ func (m Model) View() string {
 	// Convert m.devices from []string to []table.Row
 	var rows []table.Row
 	for _, choice := range newConfig.Devices {
+		// Append the device to the rows
+		// This will make sure to output all the data for the device
+		// The order of the columns must match the order of the columns in the table
 		rows = append(rows, table.Row{choice.DeviceName, choice.Description, choice.MacAddress, choice.IPAddress})
 	}
 
