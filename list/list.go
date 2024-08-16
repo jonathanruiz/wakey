@@ -69,7 +69,7 @@ var keys = keyMap{
 
 // Model for the Device component
 type Model struct {
-	choices []string // list of devices to wake
+	devices []config.Device // list of devices to wake
 	keys    keyMap
 	help    help.Model
 	table   table.Model
@@ -78,7 +78,7 @@ type Model struct {
 // InitialModel function for the Device model
 func InitialModel() tea.Model {
 	// Get devices from config
-	choices := config.ReadConfig().Devices
+	devices := config.ReadConfig().Devices
 
 	// Define table columns
 	columns := []table.Column{
@@ -89,10 +89,13 @@ func InitialModel() tea.Model {
 	}
 
 	// Define table rows
-	rows := make([]table.Row, len(choices))
-	for i, device := range choices {
+	rows := make([]table.Row, len(devices))
+	for i, device := range devices {
 		rows[i] = table.Row{
-			device,
+			device.DeviceName,
+			device.Description,
+			device.MacAddress,
+			device.IPAddress,
 		}
 	}
 
@@ -114,10 +117,10 @@ func InitialModel() tea.Model {
 
 	return Model{
 		// A list of devices to wake. This could be fetched from a database or config file
-		choices: choices,
-		// A map which indicates which choices are selected. We're using
+		devices: devices,
+		// A map which indicates which devices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
-		// of the `choices` slice, above.
+		// of the `devices` slice, above.
 		keys:  keys,
 		help:  help.New(),
 		table: t,
@@ -169,10 +172,13 @@ func (m Model) View() string {
 	// Get updated config file
 	newConfig := config.ReadConfig()
 
-	// Convert m.choices from []string to []table.Row
+	// Convert m.devices from []string to []table.Row
 	var rows []table.Row
 	for _, choice := range newConfig.Devices {
-		rows = append(rows, table.Row{choice})
+		// Append the device to the rows
+		// This will make sure to output all the data for the device
+		// The order of the columns must match the order of the columns in the table
+		rows = append(rows, table.Row{choice.DeviceName, choice.Description, choice.MacAddress, choice.IPAddress})
 	}
 
 	// Update the table with the new rows

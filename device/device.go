@@ -5,7 +5,6 @@ import (
 	"wakey/config"
 	"wakey/style"
 
-	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -19,7 +18,6 @@ var (
 type Model struct {
 	focusIndex    int
 	inputs        []textinput.Model
-	cursorMode    cursor.Mode
 	err           error
 	switchToList  func() tea.Model
 	currentConfig config.Config
@@ -90,24 +88,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Exit the program
 		case tea.KeyCtrlC:
 			return m, tea.Quit
-		// Change cursor mode
-		case tea.KeyCtrlR:
-			m.cursorMode++
-			if m.cursorMode > cursor.CursorHide {
-				m.cursorMode = cursor.CursorBlink
-			}
-			cmds := make([]tea.Cmd, len(m.inputs))
-			for i := range m.inputs {
-				cmds[i] = m.inputs[i].Cursor.SetMode(m.cursorMode)
-			}
-			return m, tea.Batch(cmds...)
+
 		// Set focus to next input
 		case tea.KeyTab, tea.KeyShiftTab, tea.KeyEnter, tea.KeyDown, tea.KeyUp:
 			// Check if the user pressed enter with the submit button focused
 			if msg.Type == tea.KeyEnter && m.focusIndex == len(m.inputs) {
 				if m.focusIndex == len(m.inputs) {
 					// Append the device to the config
-					updatedDevices := append(m.currentConfig.Devices, m.inputs[0].Value())
+					updatedDevices := append(m.currentConfig.Devices, config.Device{
+						DeviceName:  m.inputs[0].Value(),
+						Description: m.inputs[1].Value(),
+						MacAddress:  m.inputs[2].Value(),
+						IPAddress:   m.inputs[3].Value(),
+					})
 
 					// Create a new config with the updated devices
 					updatedConfig := config.Config{
@@ -198,9 +191,6 @@ func (m Model) View() string {
 	}
 	s += fmt.Sprintf("\n\n%s\n\n", *button)
 
-	s += style.HelpStyle.Render("cursor mode is ")
-	s += style.CursorModeHelpStyle.Render(m.cursorMode.String())
-	s += style.HelpStyle.Render(" (ctrl+r to change style)")
 	s += style.HelpStyle.Render("\nPress esc to return to the list")
 
 	return s

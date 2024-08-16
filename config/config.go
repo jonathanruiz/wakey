@@ -8,8 +8,16 @@ import (
 )
 
 // Config struct for the config file.
+type Device struct {
+	DeviceName  string `json:"DeviceName"`
+	Description string `json:"Description"`
+	MacAddress  string `json:"MacAddress"`
+	IPAddress   string `json:"IPAddress"`
+}
+
+// Config struct for the config file.
 type Config struct {
-	Devices []string `json:"devices"`
+	Devices []Device `json:"devices"`
 }
 
 var (
@@ -34,7 +42,7 @@ func CreateConfig() {
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		// If it doesn't exist, create it
 		config := Config{
-			Devices: []string{},
+			Devices: []Device{},
 		}
 
 		// Marshal the config to JSON
@@ -65,26 +73,27 @@ func CreateConfig() {
 
 // Read the config file and return the contents.
 func ReadConfig() Config {
+	// Check if we got an error
+	if HomeDirErr != nil {
+		fmt.Println("Error getting home directory:", HomeDirErr)
+		return Config{}
+	}
+
 	// Read the config file
 	data, err := os.ReadFile(ConfigPath)
-
-	// Check if we got an error
 	if err != nil {
 		fmt.Println("Error reading config file:", err)
 		return Config{}
 	}
 
-	// Unmarshal the config
+	// Unmarshal the JSON data into a Config struct
 	var config Config
 	err = json.Unmarshal(data, &config)
-
-	// Check if we got an error
 	if err != nil {
 		fmt.Println("Error unmarshalling config:", err)
 		return Config{}
 	}
 
-	// Return the config
 	return config
 }
 
