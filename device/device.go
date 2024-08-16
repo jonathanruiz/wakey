@@ -107,7 +107,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if msg.Type == tea.KeyEnter && m.focusIndex == len(m.inputs) {
 				if m.focusIndex == len(m.inputs) {
 					// Append the device to the config
-					updatedDevices := append(m.currentConfig.Devices, config.Device{})
+					updatedDevices := append(m.currentConfig.Devices, config.Device{
+						DeviceName:  m.inputs[0].Value(),
+						Description: m.inputs[1].Value(),
+						MacAddress:  m.inputs[2].Value(),
+						IPAddress:   m.inputs[3].Value(),
+					})
 
 					// Create a new config with the updated devices
 					updatedConfig := config.Config{
