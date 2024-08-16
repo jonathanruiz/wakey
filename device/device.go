@@ -2,19 +2,17 @@ package device
 
 import (
 	"fmt"
-	"regexp"
 	"wakey/config"
 	"wakey/style"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 var (
-	focusedButton   = style.FocusedStyle.Render("[ Submit ]")                         // The focused button
-	blurredButton   = fmt.Sprintf("[ %s ]", style.BlurredStyle.Render("Submit"))      // The blurred button
-	macAddressRegex = regexp.MustCompile(`^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$`) // The regex for the MAC address
-	ipAddressRegex  = regexp.MustCompile(`^(\d{1,3}\.){3}\d{1,3}$`)                   // The regex for the IP address
+	focusedButton = style.FocusedStyle.Render("[ Submit ]")                    // The focused button
+	blurredButton = fmt.Sprintf("[ %s ]", style.BlurredStyle.Render("Submit")) // The blurred button
 )
 
 // Model is the model for the Device component
@@ -30,9 +28,12 @@ type (
 	errMsg error
 )
 
-// ValidateInputs checks if the provided MAC address and IP address are valid
-func validateInputs(macAddress, ipAddress string) bool {
-	return macAddressRegex.MatchString(macAddress) && ipAddressRegex.MatchString(ipAddress)
+func deviceNameValidator(value string) error {
+	// Check if the value is empty
+	if value == "" {
+		return fmt.Errorf("device name is required")
+	}
+	return nil
 }
 
 // InitialModel returns the initial model for the Device component
@@ -102,12 +103,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Check if the user pressed enter with the submit button focused
 			if msg.Type == tea.KeyEnter && m.focusIndex == len(m.inputs) {
 				if m.focusIndex == len(m.inputs) {
-					// Validate inputs
-					if !validateInputs(m.inputs[2].Value(), m.inputs[3].Value()) {
-						// Prevent the user from submitting the form
-						return m, func() tea.Msg {
-							return errMsg(fmt.Errorf("invalid MAC address or IP address"))
-						}
+					// Handle form submission
+					// Reset focus index or update state as needed
+					m.focusIndex = 0
+
+					// Validate the device name
+					if err := deviceNameValidator(m.inputs[0].Value()); err != nil {
+						m.err = err
+						return m, nil
 					}
 
 					// Append the device to the config
@@ -188,6 +191,11 @@ func (m *Model) updateInputs(msg tea.Msg) tea.Cmd {
 		m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
 	}
 
+	// Ensure focus is correctly managed
+	if m.focusIndex < len(m.inputs) {
+		m.inputs[m.focusIndex].Focus()
+	}
+
 	return tea.Batch(cmds...)
 }
 
@@ -196,15 +204,24 @@ func (m Model) View() string {
 	// The header
 	s := "New Device\n\n"
 
-	// Add the text input fields
-	for _, input := range m.inputs {
-		s += input.View() + "\n"
+	// Render the inputs
+	for i, input := range m.inputs {
+		if i == 0 && m.err != nil {
+			// Display the error message inline with the first input field
+			// Refer to discussion: https://github.com/charmbracelet/bubbles/discussions/306
+			s += lipgloss.JoinHorizontal(lipgloss.Left, input.View()+"   ", style.ErrStyle(m.err.Error())) + "\n"
+
+		} else {
+			// Display the input field
+			s += input.View() + "\n"
+		}
 	}
 
 	button := &blurredButton
 	if m.focusIndex == len(m.inputs) {
 		button = &focusedButton
 	}
+
 	s += fmt.Sprintf("\n\n%s\n\n", *button)
 
 	s += style.HelpStyle.Render("\nPress esc to return to the list")

@@ -13,6 +13,7 @@ type Style struct {
 	titleStyle          lipgloss.Style
 	italicHeaderStyle   lipgloss.Style
 	deviceCountStyle    lipgloss.Style
+	errStyle            lipgloss.Style
 }
 
 // Define the style struct
@@ -46,4 +47,6 @@ var (
 	TitleStyle          = lipgloss.NewStyle().Bold(true)
 	ItalicHeaderStyle   = lipgloss.NewStyle().Italic(true)
 	DeviceCountStyle    = CursorModeHelpStyle
+	ErrStyle            = lipgloss.NewStyle().Foreground(lipgloss.Color("178")).Render // The error style
+
 )
