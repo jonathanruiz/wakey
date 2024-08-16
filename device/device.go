@@ -66,10 +66,10 @@ func InitialModel(switchToList func() tea.Model) Model {
 			ti.Placeholder = "Enter a description for the device"
 		// MAC address
 		case 2:
-			ti.Placeholder = "Enter the MAC address"
+			ti.Placeholder = "00:00:00:00:00:00"
 		// IP address
 		case 3:
-			ti.Placeholder = "Enter the IP address"
+			ti.Placeholder = "0.0.0.0"
 		}
 
 		// Add the textinput model to the slice
