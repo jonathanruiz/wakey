@@ -175,7 +175,7 @@ func (m Model) View() string {
 	// Convert m.devices from []string to []table.Row
 	var rows []table.Row
 	for _, choice := range newConfig.Devices {
-		rows = append(rows, table.Row{choice.DeviceName})
+		rows = append(rows, table.Row{choice.DeviceName, choice.Description, choice.MacAddress, choice.IPAddress})
 	}
 
 	// Update the table with the new rows
