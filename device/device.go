@@ -2,6 +2,7 @@ package device
 
 import (
 	"fmt"
+	"regexp"
 	"wakey/config"
 	"wakey/style"
 
@@ -10,8 +11,10 @@ import (
 )
 
 var (
-	focusedButton = style.FocusedStyle.Render("[ Submit ]")                    // The focused button
-	blurredButton = fmt.Sprintf("[ %s ]", style.BlurredStyle.Render("Submit")) // The blurred button
+	focusedButton   = style.FocusedStyle.Render("[ Submit ]")                         // The focused button
+	blurredButton   = fmt.Sprintf("[ %s ]", style.BlurredStyle.Render("Submit"))      // The blurred button
+	macAddressRegex = regexp.MustCompile(`^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$`) // The regex for the MAC address
+	ipAddressRegex  = regexp.MustCompile(`^(\d{1,3}\.){3}\d{1,3}$`)                   // The regex for the IP address
 )
 
 // Model is the model for the Device component
@@ -26,6 +29,11 @@ type Model struct {
 type (
 	errMsg error
 )
+
+// ValidateInputs checks if the provided MAC address and IP address are valid
+func validateInputs(macAddress, ipAddress string) bool {
+	return macAddressRegex.MatchString(macAddress) && ipAddressRegex.MatchString(ipAddress)
+}
 
 // InitialModel returns the initial model for the Device component
 func InitialModel(switchToList func() tea.Model) Model {
@@ -94,6 +102,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Check if the user pressed enter with the submit button focused
 			if msg.Type == tea.KeyEnter && m.focusIndex == len(m.inputs) {
 				if m.focusIndex == len(m.inputs) {
+					// Validate inputs
+					if !validateInputs(m.inputs[2].Value(), m.inputs[3].Value()) {
+						// Prevent the user from submitting the form
+						return m, func() tea.Msg {
+							return errMsg(fmt.Errorf("invalid MAC address or IP address"))
+						}
+					}
+
 					// Append the device to the config
 					updatedDevices := append(m.currentConfig.Devices, config.Device{
 						DeviceName:  m.inputs[0].Value(),
