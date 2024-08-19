@@ -52,7 +52,7 @@ var keys = keyMap{
 	),
 	Enter: key.NewBinding(
 		key.WithKeys("enter"),
-		key.WithHelp("enter", "toggle select"),
+		key.WithHelp("enter", "select"),
 	),
 	New: key.NewBinding(
 		key.WithKeys("n"),
@@ -70,10 +70,11 @@ var keys = keyMap{
 
 // Model for the Device component
 type Model struct {
-	devices []config.Device // list of devices to wake
-	keys    keyMap
-	help    help.Model
-	table   table.Model
+	devices       []config.Device // list of devices to wake
+	keys          keyMap
+	help          help.Model
+	table         table.Model
+	sentPacketMsg string
 }
 
 // InitialModel function for the Device model
@@ -168,6 +169,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
 
+		// Wake device
 		case key.Matches(msg, m.keys.Enter):
 			// Get the selected device
 			selected := m.table.SelectedRow()
@@ -177,6 +179,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			// Wake the device
 			wol.WakeDevice(macAddress)
+
+			// State that the packet was sent
+			deviceName := selected[0]
+			m.sentPacketMsg = "Magic packet sent to " + deviceName
+
 		}
 
 	}
@@ -214,6 +221,11 @@ func (m Model) View() string {
 
 	// Show device count
 	s += style.DeviceCountStyle.Render("Number of devices: "+strconv.Itoa(len(m.table.Rows()))) + "\n\n" // srtconv.Itoa converts int to string
+
+	// Show the message that the packet was sent
+	if m.sentPacketMsg != "" {
+		s += style.FocusedStyle.Render(m.sentPacketMsg) + "\n\n"
+	}
 
 	// Help text
 	s += m.help.View(m.keys)
