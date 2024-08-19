@@ -184,6 +184,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			deviceName := selected[0]
 			popupModel := NewPopupMsg(fmt.Sprintf("Magic Packet has been sent to: %s", deviceName), m)
 
+			// Return the popup model
 			return popupModel, popupModel.Init()
 		}
 	}

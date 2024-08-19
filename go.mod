@@ -5,7 +5,6 @@ go 1.22.6
 require (
 	github.com/charmbracelet/bubbletea v0.26.6
 	github.com/charmbracelet/lipgloss v0.9.1
-	github.com/sabhiram/go-wol v0.0.0-20211224004021-c83b0c2f887d
 )
 
 require (
