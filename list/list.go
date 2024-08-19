@@ -140,6 +140,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Update the table with the new rows
 	m.table.SetRows(rows)
 
+	// Define table rows
+	for i, device := range config.ReadConfig().Devices {
+		m.table.Rows()[i] = table.Row{
+			device.DeviceName,
+			device.Description,
+			device.MacAddress,
+			device.IPAddress,
+		}
+	}
+
 	switch msg := msg.(type) {
 	// Check if it was a key press
 	case tea.KeyMsg:
@@ -157,6 +167,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
 		}
+
 	}
 
 	// Update the table
