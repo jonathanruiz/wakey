@@ -1,6 +1,7 @@
 package list
 
 import (
+	"fmt"
 	"strconv"
 	"wakey/config"
 	"wakey/device"
@@ -70,11 +71,10 @@ var keys = keyMap{
 
 // Model for the Device component
 type Model struct {
-	devices       []config.Device // list of devices to wake
-	keys          keyMap
-	help          help.Model
-	table         table.Model
-	sentPacketMsg string
+	devices []config.Device // list of devices to wake
+	keys    keyMap
+	help    help.Model
+	table   table.Model
 }
 
 // InitialModel function for the Device model
@@ -180,12 +180,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Wake the device
 			wol.WakeDevice(macAddress)
 
-			// State that the packet was sent
+			// Show modal with device name
 			deviceName := selected[0]
-			m.sentPacketMsg = "Magic packet sent to " + deviceName
+			popupModel := NewPopupMsg(fmt.Sprintf("Magic Packet has been sent to: %s", deviceName), m)
 
+			return popupModel, nil
 		}
-
 	}
 
 	// Update the table
@@ -221,11 +221,6 @@ func (m Model) View() string {
 
 	// Show device count
 	s += style.DeviceCountStyle.Render("Number of devices: "+strconv.Itoa(len(m.table.Rows()))) + "\n\n" // srtconv.Itoa converts int to string
-
-	// Show the message that the packet was sent
-	if m.sentPacketMsg != "" {
-		s += style.FocusedStyle.Render(m.sentPacketMsg) + "\n\n"
-	}
 
 	// Help text
 	s += m.help.View(m.keys)
