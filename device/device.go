@@ -19,20 +19,33 @@ var (
 type Model struct {
 	focusIndex    int
 	inputs        []textinput.Model
-	err           error
+	err           []error
 	switchToList  func() tea.Model
 	currentConfig config.Config
 }
 
-type (
-	errMsg error
-)
-
-func deviceNameValidator(value string) error {
+func (m *Model) deviceNameValidator(value string) error {
 	// Check if the value is empty
 	if value == "" {
 		return fmt.Errorf("device name is required")
 	}
+
+	m.err[0] = nil
+	return nil
+}
+
+func (m *Model) descriptionValidator(value string) error {
+	// Check if the value is empty
+	if value == "" {
+		return fmt.Errorf("description is required")
+	}
+
+	// Check max length
+	if len(value) > 64 {
+		return fmt.Errorf("description must be less than 64 characters")
+	}
+
+	m.err[1] = nil
 	return nil
 }
 
@@ -40,7 +53,7 @@ func deviceNameValidator(value string) error {
 func InitialModel(switchToList func() tea.Model) Model {
 
 	m := Model{
-		err:           nil,
+		err:           make([]error, 4), // Initialize the slice with length 4
 		switchToList:  switchToList,
 		inputs:        make([]textinput.Model, 4), // Initialize the slice with length 4
 		currentConfig: config.ReadConfig(),
@@ -102,14 +115,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyTab, tea.KeyShiftTab, tea.KeyEnter, tea.KeyDown, tea.KeyUp:
 			// Check if the user pressed enter with the submit button focused
 			if msg.Type == tea.KeyEnter && m.focusIndex == len(m.inputs) {
+
+				// Run the validators
+				m.err[0] = m.deviceNameValidator(m.inputs[0].Value())
+				m.err[1] = m.descriptionValidator(m.inputs[1].Value())
+
 				if m.focusIndex == len(m.inputs) {
 					// Handle form submission
 					// Reset focus index or update state as needed
 					m.focusIndex = 0
 
 					// Validate the device name
-					if err := deviceNameValidator(m.inputs[0].Value()); err != nil {
-						m.err = err
+					if err := m.deviceNameValidator(m.inputs[0].Value()); err != nil {
+						m.err[0] = err
+						return m, nil
+					}
+
+					// Validate the description
+					if err := m.descriptionValidator(m.inputs[1].Value()); err != nil {
+						m.err[1] = err
 						return m, nil
 					}
 
@@ -169,9 +193,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Batch(cmds...)
 		}
 
-	case errMsg:
-		m.err = msg
-		return m, nil
 	}
 
 	// Handle character input and blinking
@@ -206,11 +227,11 @@ func (m Model) View() string {
 
 	// Render the inputs
 	for i, input := range m.inputs {
-		if i == 0 && m.err != nil {
+		// Check if there are any errors and if the errors are not nil
+		if len(m.err) > 0 && m.err[i] != nil {
 			// Display the error message inline with the first input field
 			// Refer to discussion: https://github.com/charmbracelet/bubbles/discussions/306
-			s += lipgloss.JoinHorizontal(lipgloss.Left, input.View()+"   ", style.ErrStyle(m.err.Error())) + "\n"
-
+			s += lipgloss.JoinHorizontal(lipgloss.Left, input.View()+"   ", style.ErrStyle(m.err[i].Error())) + "\n"
 		} else {
 			// Display the input field
 			s += input.View() + "\n"
