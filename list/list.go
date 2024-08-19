@@ -5,6 +5,7 @@ import (
 	"wakey/config"
 	"wakey/device"
 	"wakey/style"
+	"wakey/wol"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -166,6 +167,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Toggle help
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
+
+		case key.Matches(msg, m.keys.Enter):
+			// Get the selected device
+			selected := m.table.SelectedRow()
+
+			// Get the device MAC address
+			macAddress := selected[2]
+
+			// Wake the device
+			wol.WakeDevice(macAddress)
 		}
 
 	}
