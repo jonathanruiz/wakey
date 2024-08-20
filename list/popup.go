@@ -9,6 +9,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// PopupMsg is not being used but will be retained for future use
+
 type PopupMsg struct {
 	message       string
 	previousModel tea.Model

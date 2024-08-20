@@ -1,7 +1,6 @@
 package list
 
 import (
-	"fmt"
 	"strconv"
 	"wakey/config"
 	"wakey/device"
@@ -20,6 +19,7 @@ type Model struct {
 	keys    keyMap
 	help    help.Model
 	table   table.Model
+	status  string
 }
 
 // InitialModel function for the Device model
@@ -125,12 +125,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Wake the device
 			wol.WakeDevice(macAddress)
 
-			// Show modal with device name
+			// Write the status message
 			deviceName := selected[0]
-			popupModel := NewPopupMsg(fmt.Sprintf("Magic Packet has been sent to: %s", deviceName), m)
-
-			// Return the popup model
-			return popupModel, popupModel.Init()
+			m.status = "Waking up " + deviceName + " (" + macAddress + ")"
 		}
 	}
 
@@ -166,7 +163,10 @@ func (m Model) View() string {
 	s += m.table.View() + "\n"
 
 	// Show device count
-	s += style.DeviceCountStyle.Render("Number of devices: "+strconv.Itoa(len(m.table.Rows()))) + "\n\n" // srtconv.Itoa converts int to string
+	s += style.DeviceCountStyle.Render(" Number of devices: "+strconv.Itoa(len(m.table.Rows()))) + "\n" // srtconv.Itoa converts int to string
+
+	// Status message
+	s += style.StatusStyle.Render("Status: "+style.StatusMessageStyle.Render(m.status)) + "\n"
 
 	// Help text
 	s += m.help.View(m.keys)

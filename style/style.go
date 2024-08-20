@@ -1,6 +1,21 @@
 package style
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"os"
+
+	"github.com/charmbracelet/lipgloss"
+	"golang.org/x/term"
+)
+
+func getTerminalWidth() int {
+	width, _, err := term.GetSize(int(os.Stdout.Fd()))
+	if err != nil {
+		return 80 // default width if there's an error
+	}
+	return width
+}
+
+var termWidth = getTerminalWidth()
 
 // Define the style struct
 type Style struct {
@@ -14,6 +29,7 @@ type Style struct {
 	italicHeaderStyle   lipgloss.Style
 	deviceCountStyle    lipgloss.Style
 	errStyle            lipgloss.Style
+	statusStyle         lipgloss.Style
 }
 
 // Define the style struct
@@ -48,5 +64,10 @@ var (
 	ItalicHeaderStyle   = lipgloss.NewStyle().Italic(true)
 	DeviceCountStyle    = CursorModeHelpStyle
 	ErrStyle            = lipgloss.NewStyle().Foreground(lipgloss.Color("178")).Render // The error style
+	StatusStyle         = lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("241")).
+				Width(termWidth - 5)
+	StatusMessageStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("229")) // The status message style
 
 )
