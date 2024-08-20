@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"wakey/config"
 	"wakey/device"
+	"wakey/popup"
 	"wakey/style"
 	"wakey/wol"
 
@@ -52,6 +53,12 @@ func InitialModel() tea.Model {
 		table.WithRows(rows),
 		table.WithFocused(true),
 	)
+
+	// Set the custom key bindings
+	t.KeyMap = table.KeyMap{
+		LineUp:   keys.Up,
+		LineDown: keys.Down,
+	}
 
 	// Get the default table styles
 	s := style.DefaultTableStyles()
@@ -105,6 +112,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Create new device
 		case key.Matches(msg, m.keys.New):
 			return device.InitialModel(func() tea.Model { return m }), nil
+
+		// Delete device
+		case key.Matches(msg, m.keys.Delete):
+			// Get the selected device
+			selected := m.table.SelectedRow()
+
+			// Return popup message for confirmation
+			return popup.NewPopupMsg("Are you sure you want to delete "+selected[0]+" ("+selected[2]+")?", m, m.table), nil
 
 		// These keys should exit the program.
 		case key.Matches(msg, m.keys.Quit):
