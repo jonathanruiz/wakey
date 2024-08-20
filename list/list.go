@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"wakey/config"
 	"wakey/device"
+	"wakey/popup"
 	"wakey/style"
 	"wakey/wol"
 
@@ -118,7 +119,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selected := m.table.SelectedRow()
 
 			// Return popup message for confirmation
-			return device.NewPopupMsg("Are you sure you want to delete "+selected[0]+" ("+selected[2]+")?", m, m.table), nil
+			return popup.NewPopupMsg("Are you sure you want to delete "+selected[0]+" ("+selected[2]+")?", m, m.table), nil
 
 		// These keys should exit the program.
 		case key.Matches(msg, m.keys.Quit):

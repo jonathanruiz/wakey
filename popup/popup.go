@@ -1,10 +1,11 @@
-package device
+package popup
 
 import (
 	"fmt"
 	"wakey/config"
 	"wakey/style"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
@@ -21,6 +22,7 @@ var (
 type PopupMsg struct {
 	message       string
 	previousModel tea.Model
+	help          help.Model
 	table         table.Model
 	focusIndex    int
 	keyMap        keyMap
@@ -65,7 +67,7 @@ func (m PopupMsg) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.previousModel, nil
 		case key.Matches(msg, m.keyMap.Help):
 			// Handle the "Help" key
-
+			m.help.ShowAll = !m.help.ShowAll
 		case key.Matches(msg, m.keyMap.Quit):
 			return m.previousModel, nil
 		}
@@ -84,15 +86,17 @@ func (m PopupMsg) View() string {
 		Border(lipgloss.RoundedBorder()).
 		Padding(1, 2).
 		Align(lipgloss.Center).
-		Width(50).
+		Width(60).
 		Height(5)
 
 	if m.focusIndex == 0 {
 		buttons = lipgloss.JoinHorizontal(lipgloss.Left, yesFocusedButton, noBlurredButton)
 	} else {
 		buttons = lipgloss.JoinHorizontal(lipgloss.Left, yesBlurredButton, noFocusedButton)
-
 	}
 
-	return modalStyle.Render(fmt.Sprintf("%s\n\n%s", m.message, buttons))
+	// Help text
+	helpText := m.help.View(m.keyMap)
+
+	return modalStyle.Render(fmt.Sprintf("%s\n\n%s\n\n%s", m.message, buttons, style.HelpStyle.Render(helpText)))
 }
