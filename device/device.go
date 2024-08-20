@@ -184,6 +184,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 }
 
+// Define the DeleteDevicePopup function
+func DeleteDevicePopup(deviceName, macAddress string, m tea.Model) (tea.Model, tea.Cmd) {
+	// Create a popup message for confirmation
+	popupMessage := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("205")).
+		Render("Are you sure you want to delete " + deviceName + " (" + macAddress + ")?")
+
+	// Return the popup message and a command to handle user input
+	return m, func() tea.Msg {
+		return popupMessage
+	}
+}
+
 // updateInputs updates all the text inputs in the Device model.
 func (m *Model) updateInputs(msg tea.Msg) tea.Cmd {
 	cmds := make([]tea.Cmd, len(m.inputs))
