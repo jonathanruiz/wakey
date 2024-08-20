@@ -29,7 +29,13 @@ type PopupMsg struct {
 }
 
 func NewPopupMsg(message string, previousModel tea.Model, table table.Model) PopupMsg {
-	return PopupMsg{message: message, previousModel: previousModel, table: table, keyMap: keys}
+	return PopupMsg{
+		message:       message,
+		previousModel: previousModel,
+		table:         table,
+		keyMap:        keys,
+		help:          help.New(),
+	}
 }
 
 func (m PopupMsg) Init() tea.Cmd { return nil }
@@ -98,5 +104,5 @@ func (m PopupMsg) View() string {
 	// Help text
 	helpText := m.help.View(m.keyMap)
 
-	return modalStyle.Render(fmt.Sprintf("%s\n\n%s\n\n%s", m.message, buttons, style.HelpStyle.Render(helpText)))
+	return modalStyle.Render(fmt.Sprintf("%s\n\n%s\n\n%s", m.message, buttons, helpText))
 }
