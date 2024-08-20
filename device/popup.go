@@ -32,56 +32,41 @@ func NewPopupMsg(message string, previousModel tea.Model, table table.Model) Pop
 
 func (m PopupMsg) Init() tea.Cmd { return nil }
 
+func (m PopupMsg) handleYes() (tea.Model, tea.Cmd) {
+	selected := m.table.SelectedRow()
+	currentConfig := config.ReadConfig()
+
+	for i, device := range currentConfig.Devices {
+		if device.DeviceName == selected[0] {
+			currentConfig.Devices = append(currentConfig.Devices[:i], currentConfig.Devices[i+1:]...)
+			break
+		}
+	}
+
+	config.WriteConfig(currentConfig)
+	return m.previousModel, func() tea.Msg {
+		return tea.ClearScreen()
+	}
+}
+
 func (m PopupMsg) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, m.keyMap.Left) || key.Matches(msg, m.keyMap.Yes):
-			// Handle the "Left" key
+		case key.Matches(msg, m.keyMap.Left):
 			m.focusIndex = 0
-
-		case key.Matches(msg, m.keyMap.Right) || key.Matches(msg, m.keyMap.No):
-			// Handle the "Right" key
+		case key.Matches(msg, m.keyMap.Right):
 			m.focusIndex = 1
-
-		case key.Matches(msg, m.keyMap.Enter):
-			// Handle the "Enter" key
-			// Chek if the focus is on the "Yes" button
-			if m.focusIndex == 0 {
-				// Get the selected device
-				selected := m.table.SelectedRow()
-
-				// Get the current config
-				currentConfig := config.ReadConfig()
-
-				// Delete the selected device from the config
-				for i, device := range currentConfig.Devices {
-					if device.DeviceName == selected[0] {
-						currentConfig.Devices = append(currentConfig.Devices[:i], currentConfig.Devices[i+1:]...)
-						break
-					}
-				}
-
-				// Write the new config to the file
-				config.WriteConfig(currentConfig)
-
-				// Return to the list and clear the screen
-				return m.previousModel, func() tea.Msg {
-					return tea.ClearScreen()
-				}
-			}
-
-			// Check if the focus is on the "No" button
-			if m.focusIndex == 1 {
-				return m.previousModel, nil
-			}
+		case key.Matches(msg, m.keyMap.Yes), key.Matches(msg, m.keyMap.Enter) && m.focusIndex == 0:
+			return m.handleYes()
+		case key.Matches(msg, m.keyMap.No), key.Matches(msg, m.keyMap.Enter) && m.focusIndex == 1:
+			return m.previousModel, nil
 		case key.Matches(msg, m.keyMap.Help):
 			// Handle the "Help" key
 
 		case key.Matches(msg, m.keyMap.Quit):
-			// Handle the "Quit" key
 			return m.previousModel, nil
 		}
 	}
