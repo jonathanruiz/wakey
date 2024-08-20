@@ -3,20 +3,31 @@ package device
 import (
 	"fmt"
 	"wakey/config"
+	"wakey/style"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+)
+
+var (
+	yesFocusedButton = style.FocusedStyle.Render("[ (Y)es ]")                    // The focused button
+	yesBlurredButton = fmt.Sprintf("[ %s ]", style.BlurredStyle.Render("(Y)es")) // The blurred button
+	noFocusedButton  = style.FocusedStyle.Render("[ (N)o ]")                     // The focused button
+	noBlurredButton  = fmt.Sprintf("[ %s ]", style.BlurredStyle.Render("(N)o"))  // The blurred button
 )
 
 type PopupMsg struct {
 	message       string
 	previousModel tea.Model
 	table         table.Model
+	focusIndex    int
+	keyMap        keyMap
 }
 
 func NewPopupMsg(message string, previousModel tea.Model, table table.Model) PopupMsg {
-	return PopupMsg{message: message, previousModel: previousModel, table: table}
+	return PopupMsg{message: message, previousModel: previousModel, table: table, keyMap: keys}
 }
 
 func (m PopupMsg) Init() tea.Cmd { return nil }
@@ -26,27 +37,51 @@ func (m PopupMsg) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if msg.String() == "y" {
-			// Get the selected device
-			selected := m.table.SelectedRow()
+		switch {
+		case key.Matches(msg, m.keyMap.Left) || key.Matches(msg, m.keyMap.Yes):
+			// Handle the "Left" key
+			m.focusIndex = 0
 
-			// Get the current config
-			currentConfig := config.ReadConfig()
+		case key.Matches(msg, m.keyMap.Right) || key.Matches(msg, m.keyMap.No):
+			// Handle the "Right" key
+			m.focusIndex = 1
 
-			// Delete the selected device from the config
-			for i, device := range currentConfig.Devices {
-				if device.DeviceName == selected[0] {
-					currentConfig.Devices = append(currentConfig.Devices[:i], currentConfig.Devices[i+1:]...)
-					break
+		case key.Matches(msg, m.keyMap.Enter):
+			// Handle the "Enter" key
+			// Chek if the focus is on the "Yes" button
+			if m.focusIndex == 0 {
+				// Get the selected device
+				selected := m.table.SelectedRow()
+
+				// Get the current config
+				currentConfig := config.ReadConfig()
+
+				// Delete the selected device from the config
+				for i, device := range currentConfig.Devices {
+					if device.DeviceName == selected[0] {
+						currentConfig.Devices = append(currentConfig.Devices[:i], currentConfig.Devices[i+1:]...)
+						break
+					}
+				}
+
+				// Write the new config to the file
+				config.WriteConfig(currentConfig)
+
+				// Return to the list and clear the screen
+				return m.previousModel, func() tea.Msg {
+					return tea.ClearScreen()
 				}
 			}
 
-			// Write the new config to the file
-			config.WriteConfig(currentConfig)
+			// Check if the focus is on the "No" button
+			if m.focusIndex == 1 {
+				return m.previousModel, nil
+			}
+		case key.Matches(msg, m.keyMap.Help):
+			// Handle the "Help" key
 
-			return m.previousModel, nil
-		}
-		if msg.String() == "n" || msg.String() == "esc" {
+		case key.Matches(msg, m.keyMap.Quit):
+			// Handle the "Quit" key
 			return m.previousModel, nil
 		}
 	}
@@ -58,6 +93,8 @@ func (m PopupMsg) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m PopupMsg) View() string {
+	var buttons string
+
 	modalStyle := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		Padding(1, 2).
@@ -65,5 +102,12 @@ func (m PopupMsg) View() string {
 		Width(50).
 		Height(5)
 
-	return modalStyle.Render(fmt.Sprintf("%s\n", m.message))
+	if m.focusIndex == 0 {
+		buttons = lipgloss.JoinHorizontal(lipgloss.Left, yesFocusedButton, noBlurredButton)
+	} else {
+		buttons = lipgloss.JoinHorizontal(lipgloss.Left, yesBlurredButton, noFocusedButton)
+
+	}
+
+	return modalStyle.Render(fmt.Sprintf("%s\n\n%s", m.message, buttons))
 }
