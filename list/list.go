@@ -34,6 +34,7 @@ func InitialModel() tea.Model {
 		{Title: "Description", Width: 30},
 		{Title: "MAC Address", Width: 20},
 		{Title: "IP Address", Width: 15},
+		{Title: "Status", Width: 15},
 	}
 
 	// Define table rows
