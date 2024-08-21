@@ -88,26 +88,21 @@ func (m Model) UpdateStatus() {
 	// Get the devices
 	devices := config.ReadConfig().Devices
 
-	// Create a new slice of table rows
-	var rows []table.Row
-
 	// Loop through the devices
-	for _, device := range devices {
+	for i, device := range devices {
 
 		// Get the status of the device
 		isOnline := wol.IsOnline(device.IPAddress)
 
 		if isOnline {
-			rows = append(rows, table.Row{device.DeviceName, device.Description, device.MacAddress, device.IPAddress, "Online"})
-
+			devices[i].Status = "Online"
 		} else {
-			rows = append(rows, table.Row{device.DeviceName, device.Description, device.MacAddress, device.IPAddress, "Offline"})
-
+			devices[i].Status = "Offline"
 		}
-
 	}
-	// Update the table
-	m.table.SetRows(rows)
+
+	// Write to the config file
+	config.WriteConfig(config.Config{Devices: devices})
 }
 
 // Init function for the Device model
