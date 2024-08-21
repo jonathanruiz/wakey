@@ -13,6 +13,7 @@ type Device struct {
 	Description string `json:"Description"`
 	MacAddress  string `json:"MacAddress"`
 	IPAddress   string `json:"IPAddress"`
+	Status      string `json:"Status"`
 }
 
 // Config struct for the config file.

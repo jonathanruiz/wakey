@@ -45,6 +45,7 @@ func InitialModel() tea.Model {
 			device.Description,
 			device.MacAddress,
 			device.IPAddress,
+			device.Status,
 		}
 	}
 
@@ -82,6 +83,33 @@ func InitialModel() tea.Model {
 	}
 }
 
+// Update the status of the devices
+func (m Model) UpdateStatus() {
+	// Get the devices
+	devices := config.ReadConfig().Devices
+
+	// Create a new slice of table rows
+	var rows []table.Row
+
+	// Loop through the devices
+	for _, device := range devices {
+
+		// Get the status of the device
+		isOnline := wol.IsOnline(device.IPAddress)
+
+		if isOnline {
+			rows = append(rows, table.Row{device.DeviceName, device.Description, device.MacAddress, device.IPAddress, "Online"})
+
+		} else {
+			rows = append(rows, table.Row{device.DeviceName, device.Description, device.MacAddress, device.IPAddress, "Offline"})
+
+		}
+
+	}
+	// Update the table
+	m.table.SetRows(rows)
+}
+
 // Init function for the Device model
 func (m Model) Init() tea.Cmd { return nil }
 
@@ -102,6 +130,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			device.Description,
 			device.MacAddress,
 			device.IPAddress,
+			device.Status,
 		}
 	}
 
@@ -122,9 +151,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Return popup message for confirmation
 			return popup.NewPopupMsg("Are you sure you want to delete "+selected[0]+" ("+selected[2]+")?", m, m.table), nil
 
-		// These keys should exit the program.
-		case key.Matches(msg, m.keys.Quit):
-			return m, tea.Quit
+		// Refresh the table
+		case key.Matches(msg, m.keys.Refresh):
+			m.UpdateStatus()
 
 		// Toggle help
 		case key.Matches(msg, m.keys.Help):
@@ -144,6 +173,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Write the status message
 			deviceName := selected[0]
 			m.status = "Waking up " + deviceName + " (" + macAddress + ")"
+
+		// These keys should exit the program.
+		case key.Matches(msg, m.keys.Quit):
+			return m, tea.Quit
 		}
 	}
 
@@ -162,11 +195,11 @@ func (m Model) View() string {
 
 	// Convert m.devices from []string to []table.Row
 	var rows []table.Row
-	for _, choice := range newConfig.Devices {
+	for _, device := range newConfig.Devices {
 		// Append the device to the rows
 		// This will make sure to output all the data for the device
 		// The order of the columns must match the order of the columns in the table
-		rows = append(rows, table.Row{choice.DeviceName, choice.Description, choice.MacAddress, choice.IPAddress})
+		rows = append(rows, table.Row{device.DeviceName, device.Description, device.MacAddress, device.IPAddress, device.Status})
 	}
 
 	// Update the table with the new rows
