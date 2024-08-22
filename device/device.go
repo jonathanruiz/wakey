@@ -5,6 +5,8 @@ import (
 	"wakey/config"
 	"wakey/style"
 
+	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -22,6 +24,8 @@ type Model struct {
 	err           []error
 	switchToList  func() tea.Model
 	currentConfig config.Config
+	keys          keyMap
+	help          help.Model
 }
 
 // InitialModel returns the initial model for the Device component
@@ -32,6 +36,8 @@ func InitialModel(switchToList func() tea.Model) Model {
 		switchToList:  switchToList,
 		inputs:        make([]textinput.Model, 4), // Initialize the slice with length 4
 		currentConfig: config.ReadConfig(),
+		keys:          keys,
+		help:          help.New(),
 	}
 
 	// Create a new text input model for each input field
@@ -82,18 +88,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.Type {
+		switch {
 		// Return to the list
-		case tea.KeyEsc:
+		case key.Matches(msg, m.keys.Quit):
 			return m.switchToList(), nil
-		// Exit the program
-		case tea.KeyCtrlC:
-			return m, tea.Quit
 
 		// Set focus to next input
-		case tea.KeyTab, tea.KeyShiftTab, tea.KeyEnter, tea.KeyDown, tea.KeyUp:
+		case key.Matches(msg, m.keys.Up), key.Matches(msg, m.keys.Down), key.Matches(msg, m.keys.Enter):
 			// Check if the user pressed enter with the submit button focused
-			if msg.Type == tea.KeyEnter && m.focusIndex == len(m.inputs) {
+			if key.Matches(msg, m.keys.Enter) && m.focusIndex == len(m.inputs) {
 
 				// Run the validators
 				m.err[0] = m.deviceNameValidator(m.inputs[0].Value())
@@ -148,7 +151,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			// Cycle indexes
-			if msg.Type == tea.KeyUp || msg.Type == tea.KeyShiftTab {
+			if key.Matches(msg, m.keys.Up) {
 				m.focusIndex--
 			} else {
 				m.focusIndex++
@@ -245,7 +248,8 @@ func (m Model) View() string {
 
 	s += fmt.Sprintf("\n\n%s\n\n", *button)
 
-	s += style.HelpStyle.Render("\nPress esc to return to the list")
+	// Render the help text
+	s += m.help.View(m.keys)
 
 	return s
 
