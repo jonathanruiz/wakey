@@ -22,13 +22,10 @@ type Model struct {
 	keys    keyMap
 	help    help.Model
 	table   table.Model
-	status  error
 }
 
 // InitialModel function for the Device model
 func InitialModel() tea.Model {
-	// Create the config file if it	doesn't exist
-
 	// Get devices with updated state
 	devices := config.GetUpdateState().Devices
 
@@ -130,7 +127,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Refresh the table
 		case key.Matches(msg, m.keys.Refresh):
-			// retyrn InitialModel to refresh the table
+			// return InitialModel to refresh the table
+			status.Message = fmt.Errorf("refreshing devices")
 			return InitialModel(), tea.ClearScreen
 
 		// Toggle help
