@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-
 	// Create a new program and open the alternate screen
 	p := tea.NewProgram(list.InitialModel(), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
