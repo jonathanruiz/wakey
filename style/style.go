@@ -30,6 +30,7 @@ type Style struct {
 	deviceCountStyle    lipgloss.Style
 	errStyle            lipgloss.Style
 	statusStyle         lipgloss.Style
+	statusMessageStyle  lipgloss.Style
 }
 
 // Define the style struct
@@ -69,5 +70,4 @@ var (
 				BorderForeground(lipgloss.Color("241")).
 				Width(termWidth - 5)
 	StatusMessageStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("229")) // The status message style
-
 )

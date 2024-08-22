@@ -3,6 +3,7 @@ package device
 import (
 	"fmt"
 	"wakey/config"
+	"wakey/status"
 	"wakey/style"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -22,22 +23,21 @@ type Model struct {
 	focusIndex    int
 	inputs        []textinput.Model
 	err           []error
-	switchToList  func() tea.Model
+	previousModel tea.Model
 	currentConfig config.Config
 	keys          keyMap
 	help          help.Model
 }
 
 // InitialModel returns the initial model for the Device component
-func InitialModel(switchToList func() tea.Model) Model {
-
+func InitialModel(previousModel tea.Model) Model {
 	m := Model{
-		err:           make([]error, 4), // Initialize the slice with length 4
-		switchToList:  switchToList,
+		err:           make([]error, 4),           // Initialize the slice with length 4
 		inputs:        make([]textinput.Model, 4), // Initialize the slice with length 4
 		currentConfig: config.ReadConfig(),
 		keys:          keys,
 		help:          help.New(),
+		previousModel: previousModel,
 	}
 
 	// Create a new text input model for each input field
@@ -91,7 +91,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		// Return to the list
 		case key.Matches(msg, m.keys.Quit):
-			return m.switchToList(), nil
+			return m.previousModel, nil
 
 		// Toggle help
 		case key.Matches(msg, m.keys.Help):
@@ -136,7 +136,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						Description: m.inputs[1].Value(),
 						MacAddress:  m.inputs[2].Value(),
 						IPAddress:   m.inputs[3].Value(),
-						Status:      "Offline",
+						State:       "Offline",
 					})
 
 					// Create a new config with the updated devices
@@ -147,8 +147,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					// Write the the new version of the config to the file
 					config.WriteConfig(updatedConfig)
 
+					// Set the status message
+					status.Message = fmt.Errorf("device [%s] (%s) added", m.inputs[0].Value(), m.inputs[2].Value())
+
 					// Return to the list and clear the screen
-					return m.switchToList(), func() tea.Msg {
+					return m.previousModel, func() tea.Msg {
 						return tea.ClearScreen()
 					}
 				}
