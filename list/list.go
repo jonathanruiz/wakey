@@ -30,7 +30,7 @@ func InitialModel() tea.Model {
 	status := config.CreateConfig()
 
 	// Get devices with updated status
-	devices := config.UpdateStatus().Devices
+	devices := config.GetUpdateStatus().Devices
 
 	// Define table columns
 	columns := []table.Column{

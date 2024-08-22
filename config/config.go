@@ -122,7 +122,7 @@ func WriteConfig(config Config) {
 }
 
 // Update the status of the devices
-func UpdateStatus() Config {
+func GetUpdateStatus() Config {
 	// Get the devices
 	devices := ReadConfig().Devices
 
