@@ -22,9 +22,9 @@ func (k keyMap) ShortHelp() []key.Binding {
 // key.Map interface.
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down},   // first column
-		{k.Enter},        // second column
-		{k.Help, k.Quit}, // third column
+		{k.Enter, k.Up, k.Down}, // first column
+		{k.Help},                // second column
+		{k.Quit},                // third column
 	}
 }
 
@@ -43,8 +43,8 @@ var keys = keyMap{
 		key.WithHelp("enter", "next field/submit"),
 	),
 	Help: key.NewBinding(
-		key.WithKeys("ctrl"),
-		key.WithHelp("ctrl", "toggle help"),
+		key.WithKeys("ctrl+h"),
+		key.WithHelp("ctrl+h", "toggle help"),
 	),
 	Quit: key.NewBinding(
 		key.WithKeys("esc"),
