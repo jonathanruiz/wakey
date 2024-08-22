@@ -1,6 +1,7 @@
 package list
 
 import (
+	"fmt"
 	"strconv"
 	"wakey/config"
 	"wakey/device"
@@ -20,13 +21,16 @@ type Model struct {
 	keys    keyMap
 	help    help.Model
 	table   table.Model
-	status  string
+	status  error
 }
 
 // InitialModel function for the Device model
 func InitialModel() tea.Model {
-	// Get devices from config
-	devices := config.ReadConfig().Devices
+	// Create the config file if it	doesn't exist
+	status := config.CreateConfig()
+
+	// Get devices with updated status
+	devices := config.GetUpdateStatus().Devices
 
 	// Define table columns
 	columns := []table.Column{
@@ -34,6 +38,7 @@ func InitialModel() tea.Model {
 		{Title: "Description", Width: 30},
 		{Title: "MAC Address", Width: 20},
 		{Title: "IP Address", Width: 15},
+		{Title: "Status", Width: 15},
 	}
 
 	// Define table rows
@@ -44,6 +49,7 @@ func InitialModel() tea.Model {
 			device.Description,
 			device.MacAddress,
 			device.IPAddress,
+			device.Status,
 		}
 	}
 
@@ -75,9 +81,10 @@ func InitialModel() tea.Model {
 		// A map which indicates which devices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
 		// of the `devices` slice, above.
-		keys:  keys,
-		help:  help.New(),
-		table: t,
+		keys:   keys,
+		help:   help.New(),
+		table:  t,
+		status: status,
 	}
 }
 
@@ -101,6 +108,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			device.Description,
 			device.MacAddress,
 			device.IPAddress,
+			device.Status,
 		}
 	}
 
@@ -121,9 +129,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Return popup message for confirmation
 			return popup.NewPopupMsg("Are you sure you want to delete "+selected[0]+" ("+selected[2]+")?", m, m.table), nil
 
-		// These keys should exit the program.
-		case key.Matches(msg, m.keys.Quit):
-			return m, tea.Quit
+		// Refresh the table
+		case key.Matches(msg, m.keys.Refresh):
+			// retyrn InitialModel to refresh the table
+			return InitialModel(), tea.ClearScreen
 
 		// Toggle help
 		case key.Matches(msg, m.keys.Help):
@@ -142,7 +151,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			// Write the status message
 			deviceName := selected[0]
-			m.status = "Waking up " + deviceName + " (" + macAddress + ")"
+			m.status = fmt.Errorf("Waking up " + deviceName + " (" + macAddress + ")")
+
+		// These keys should exit the program.
+		case key.Matches(msg, m.keys.Quit):
+			return m, tea.Quit
 		}
 	}
 
@@ -156,23 +169,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View function for the Device model
 func (m Model) View() string {
+
 	// Get updated config file
 	newConfig := config.ReadConfig()
 
 	// Convert m.devices from []string to []table.Row
 	var rows []table.Row
-	for _, choice := range newConfig.Devices {
+	for _, device := range newConfig.Devices {
 		// Append the device to the rows
 		// This will make sure to output all the data for the device
 		// The order of the columns must match the order of the columns in the table
-		rows = append(rows, table.Row{choice.DeviceName, choice.Description, choice.MacAddress, choice.IPAddress})
+		rows = append(rows, table.Row{device.DeviceName, device.Description, device.MacAddress, device.IPAddress, device.Status})
 	}
 
 	// Update the table with the new rows
 	m.table.SetRows(rows)
 
 	// The header
-	s := style.TitleStyle.Render("Which device should you wake?") + "\n\n"
+	s := "\n"
 
 	// Render the table
 	s += m.table.View() + "\n"
@@ -181,7 +195,13 @@ func (m Model) View() string {
 	s += style.DeviceCountStyle.Render(" Number of devices: "+strconv.Itoa(len(m.table.Rows()))) + "\n" // srtconv.Itoa converts int to string
 
 	// Status message
-	s += style.StatusStyle.Render("Status: "+style.StatusMessageStyle.Render(m.status)) + "\n"
+	var statusMessage string
+	if m.status != nil {
+		statusMessage = m.status.Error()
+	} else {
+		statusMessage = "No status"
+	}
+	s += style.StatusStyle.Render("Status: "+style.StatusMessageStyle.Render(statusMessage)) + "\n"
 
 	// Help text
 	s += m.help.View(m.keys)

@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"net"
 	"regexp"
+	"time"
+
+	"github.com/go-ping/ping"
 )
 
 var (
@@ -102,4 +105,23 @@ func WakeDevice(mac string) error {
 
 	// Return nil if everything was successful
 	return nil
+}
+
+// Ping the device
+func IsOnline(ip string) bool {
+	pinger, err := ping.NewPinger(ip)
+	if err != nil {
+		panic(err)
+	}
+	pinger.Count = 1
+	pinger.Timeout = time.Second * 1 // 1 seconds
+	pinger.Run()                     // blocks until finished
+	stats := pinger.Statistics()     // get send/receive/rtt stats
+
+	if stats.PacketsRecv > 0 {
+		return true
+	} else {
+		return false
+	}
+
 }

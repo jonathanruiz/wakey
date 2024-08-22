@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"wakey/wol"
 )
 
 // Config struct for the config file.
@@ -13,6 +14,7 @@ type Device struct {
 	Description string `json:"Description"`
 	MacAddress  string `json:"MacAddress"`
 	IPAddress   string `json:"IPAddress"`
+	Status      string `json:"Status"`
 }
 
 // Config struct for the config file.
@@ -27,12 +29,12 @@ var (
 
 // Create a config file if it doesn't exist in the users home directory.
 // Returns the contents of the config file.
-func CreateConfig() {
+func CreateConfig() error {
 
 	// Check if we got an error
 	if HomeDirErr != nil {
-		fmt.Println("Error getting home directory:", HomeDirErr)
-		return
+
+		return fmt.Errorf("error getting home directory: %v", HomeDirErr)
 	}
 
 	// Create the path to the config file
@@ -50,8 +52,7 @@ func CreateConfig() {
 
 		// Check if we got an error
 		if err != nil {
-			fmt.Println("Error marshalling config:", err)
-			return
+			return fmt.Errorf("error marshalling config: %v", err)
 		}
 
 		// Write the config to the file
@@ -59,15 +60,14 @@ func CreateConfig() {
 
 		// Check if we got an error
 		if err != nil {
-			fmt.Println("Error writing config file:", err)
-			return
+			return fmt.Errorf("error writing config file: %v", err)
 		}
 
 		// Print a message to the user
-		fmt.Println("Config file created at", configPath)
+		return fmt.Errorf("Config file created at: %v", configPath)
 	} else {
 		// Print a message to the user
-		fmt.Println("Config file already exists at", configPath)
+		return fmt.Errorf("Config file already exists at: %v", configPath)
 	}
 }
 
@@ -82,7 +82,7 @@ func ReadConfig() Config {
 	// Read the config file
 	data, err := os.ReadFile(ConfigPath)
 	if err != nil {
-		fmt.Println("Error reading config file:", err)
+		fmt.Println("error reading config file:", err)
 		return Config{}
 	}
 
@@ -121,6 +121,31 @@ func WriteConfig(config Config) {
 	fmt.Println("Config file updated at", ConfigPath)
 }
 
+// Update the status of the devices
+func GetUpdateStatus() Config {
+	// Get the devices
+	devices := ReadConfig().Devices
+
+	// Loop through the devices
+	for i, device := range devices {
+
+		// Get the status of the device
+		isOnline := wol.IsOnline(device.IPAddress)
+
+		if isOnline {
+			devices[i].Status = "Online"
+		} else {
+			devices[i].Status = "Offline"
+		}
+	}
+
+	// Write the updated config file
+	WriteConfig(Config{Devices: devices})
+
+	// Return the config file
+	return Config{Devices: devices}
+}
+
 /*
 Convert the config to a JSON string.
 
@@ -130,7 +155,7 @@ Might not be necessary anymore since `ReadConfig()` returns a `Config` struct as
 func (c Config) ConfigToString() string {
 	data, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
-		fmt.Println("Error marshalling config:", err)
+		fmt.Println("error marshalling config:", err)
 		return ""
 	}
 	return string(data)
