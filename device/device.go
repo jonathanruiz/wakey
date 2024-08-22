@@ -46,18 +46,22 @@ func InitialModel(switchToList func() tea.Model) Model {
 		switch i {
 		// Device name
 		case 0:
+			ti.Prompt = "Device Name   : "
 			ti.Placeholder = "Enter the device name"
 			ti.Focus()
 			ti.PromptStyle = style.FocusedStyle
 			ti.TextStyle = style.FocusedStyle
 		// Description
 		case 1:
+			ti.Prompt = "Description   : "
 			ti.Placeholder = "Enter a description for the device"
 		// MAC address
 		case 2:
+			ti.Prompt = "MAC Address   : "
 			ti.Placeholder = "00:00:00:00:00:00"
 		// IP address
 		case 3:
+			ti.Prompt = "IP Address    : "
 			ti.Placeholder = "0.0.0.0"
 		}
 
