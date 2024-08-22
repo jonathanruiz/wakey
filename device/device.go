@@ -230,7 +230,7 @@ func (m *Model) updateInputs(msg tea.Msg) tea.Cmd {
 // View function for the Device model
 func (m Model) View() string {
 	// The header
-	s := "New Device\n\n"
+	s := style.FocusedStyle.Render("\nNew Device") + "\n\n"
 
 	// Render the inputs
 	for i, input := range m.inputs {
