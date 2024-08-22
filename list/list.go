@@ -131,8 +131,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Refresh the table
 		case key.Matches(msg, m.keys.Refresh):
-			// clear screen
-			return InitialModel(), nil
+			// retyrn InitialModel to refresh the table
+			return InitialModel(), tea.ClearScreen
 
 		// Toggle help
 		case key.Matches(msg, m.keys.Help):
