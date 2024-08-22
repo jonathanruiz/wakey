@@ -139,7 +139,10 @@ func UpdateStatus() Config {
 		}
 	}
 
-	// Write to the config file
+	// Write the updated config file
+	WriteConfig(Config{Devices: devices})
+
+	// Return the config file
 	return Config{Devices: devices}
 }
 

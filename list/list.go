@@ -29,7 +29,7 @@ func InitialModel() tea.Model {
 	// Create the config file if it	doesn't exist
 	status := config.CreateConfig()
 
-	// Update the Status of the devices
+	// Get devices with updated status
 	devices := config.UpdateStatus().Devices
 
 	// Define table columns
@@ -169,6 +169,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View function for the Device model
 func (m Model) View() string {
+
 	// Get updated config file
 	newConfig := config.ReadConfig()
 
