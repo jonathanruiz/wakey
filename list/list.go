@@ -21,13 +21,13 @@ type Model struct {
 	keys    keyMap
 	help    help.Model
 	table   table.Model
-	state   error
+	status  error
 }
 
 // InitialModel function for the Device model
 func InitialModel() tea.Model {
 	// Create the config file if it	doesn't exist
-	state := config.CreateConfig()
+	status := config.CreateConfig()
 
 	// Get devices with updated state
 	devices := config.GetUpdateState().Devices
@@ -38,7 +38,7 @@ func InitialModel() tea.Model {
 		{Title: "Description", Width: 30},
 		{Title: "MAC Address", Width: 20},
 		{Title: "IP Address", Width: 15},
-		{Title: "state", Width: 15},
+		{Title: "State", Width: 15},
 	}
 
 	// Define table rows
@@ -81,10 +81,10 @@ func InitialModel() tea.Model {
 		// A map which indicates which devices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
 		// of the `devices` slice, above.
-		keys:  keys,
-		help:  help.New(),
-		table: t,
-		state: state,
+		keys:   keys,
+		help:   help.New(),
+		table:  t,
+		status: status,
 	}
 }
 
@@ -149,9 +149,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Wake the device
 			wol.WakeDevice(macAddress)
 
-			// Write the state message
+			// Write the status message
 			deviceName := selected[0]
-			m.state = fmt.Errorf("Waking up " + deviceName + " (" + macAddress + ")")
+			m.status = fmt.Errorf("Waking up " + deviceName + " (" + macAddress + ")")
 
 		// These keys should exit the program.
 		case key.Matches(msg, m.keys.Quit):
@@ -194,14 +194,14 @@ func (m Model) View() string {
 	// Show device count
 	s += style.DeviceCountStyle.Render(" Number of devices: "+strconv.Itoa(len(m.table.Rows()))) + "\n" // srtconv.Itoa converts int to string
 
-	// state message
-	var stateMessage string
-	if m.state != nil {
-		stateMessage = m.state.Error()
+	// Status message
+	var statusMessage string
+	if m.status != nil {
+		statusMessage = m.status.Error()
 	} else {
-		stateMessage = "No state"
+		statusMessage = "No status"
 	}
-	s += style.StateStyle.Render("state: "+style.StateMessageStyle.Render(stateMessage)) + "\n"
+	s += style.StatusStyle.Render("Status: "+style.StatusMessageStyle.Render(statusMessage)) + "\n"
 
 	// Help text
 	s += m.help.View(m.keys)
