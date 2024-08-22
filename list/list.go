@@ -186,7 +186,7 @@ func (m Model) View() string {
 	m.table.SetRows(rows)
 
 	// The header
-	s := style.TitleStyle.Render("Which device should you wake?") + "\n\n"
+	s := "\n"
 
 	// Render the table
 	s += m.table.View() + "\n"
