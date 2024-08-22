@@ -21,16 +21,16 @@ type Model struct {
 	keys    keyMap
 	help    help.Model
 	table   table.Model
-	status  error
+	state   error
 }
 
 // InitialModel function for the Device model
 func InitialModel() tea.Model {
 	// Create the config file if it	doesn't exist
-	status := config.CreateConfig()
+	state := config.CreateConfig()
 
-	// Get devices with updated status
-	devices := config.GetUpdateStatus().Devices
+	// Get devices with updated state
+	devices := config.GetUpdateState().Devices
 
 	// Define table columns
 	columns := []table.Column{
@@ -38,7 +38,7 @@ func InitialModel() tea.Model {
 		{Title: "Description", Width: 30},
 		{Title: "MAC Address", Width: 20},
 		{Title: "IP Address", Width: 15},
-		{Title: "Status", Width: 15},
+		{Title: "state", Width: 15},
 	}
 
 	// Define table rows
@@ -49,7 +49,7 @@ func InitialModel() tea.Model {
 			device.Description,
 			device.MacAddress,
 			device.IPAddress,
-			device.Status,
+			device.State,
 		}
 	}
 
@@ -81,10 +81,10 @@ func InitialModel() tea.Model {
 		// A map which indicates which devices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
 		// of the `devices` slice, above.
-		keys:   keys,
-		help:   help.New(),
-		table:  t,
-		status: status,
+		keys:  keys,
+		help:  help.New(),
+		table: t,
+		state: state,
 	}
 }
 
@@ -108,7 +108,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			device.Description,
 			device.MacAddress,
 			device.IPAddress,
-			device.Status,
+			device.State,
 		}
 	}
 
@@ -149,9 +149,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Wake the device
 			wol.WakeDevice(macAddress)
 
-			// Write the status message
+			// Write the state message
 			deviceName := selected[0]
-			m.status = fmt.Errorf("Waking up " + deviceName + " (" + macAddress + ")")
+			m.state = fmt.Errorf("Waking up " + deviceName + " (" + macAddress + ")")
 
 		// These keys should exit the program.
 		case key.Matches(msg, m.keys.Quit):
@@ -179,7 +179,7 @@ func (m Model) View() string {
 		// Append the device to the rows
 		// This will make sure to output all the data for the device
 		// The order of the columns must match the order of the columns in the table
-		rows = append(rows, table.Row{device.DeviceName, device.Description, device.MacAddress, device.IPAddress, device.Status})
+		rows = append(rows, table.Row{device.DeviceName, device.Description, device.MacAddress, device.IPAddress, device.State})
 	}
 
 	// Update the table with the new rows
@@ -194,14 +194,14 @@ func (m Model) View() string {
 	// Show device count
 	s += style.DeviceCountStyle.Render(" Number of devices: "+strconv.Itoa(len(m.table.Rows()))) + "\n" // srtconv.Itoa converts int to string
 
-	// Status message
-	var statusMessage string
-	if m.status != nil {
-		statusMessage = m.status.Error()
+	// state message
+	var stateMessage string
+	if m.state != nil {
+		stateMessage = m.state.Error()
 	} else {
-		statusMessage = "No status"
+		stateMessage = "No state"
 	}
-	s += style.StatusStyle.Render("Status: "+style.StatusMessageStyle.Render(statusMessage)) + "\n"
+	s += style.StateStyle.Render("state: "+style.StateMessageStyle.Render(stateMessage)) + "\n"
 
 	// Help text
 	s += m.help.View(m.keys)

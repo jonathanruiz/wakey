@@ -14,7 +14,7 @@ type Device struct {
 	Description string `json:"Description"`
 	MacAddress  string `json:"MacAddress"`
 	IPAddress   string `json:"IPAddress"`
-	Status      string `json:"Status"`
+	State       string `json:"State"`
 }
 
 // Config struct for the config file.
@@ -121,21 +121,21 @@ func WriteConfig(config Config) {
 	fmt.Println("Config file updated at", ConfigPath)
 }
 
-// Update the status of the devices
-func GetUpdateStatus() Config {
+// Update the State of the devices
+func GetUpdateState() Config {
 	// Get the devices
 	devices := ReadConfig().Devices
 
 	// Loop through the devices
 	for i, device := range devices {
 
-		// Get the status of the device
+		// Get the State of the device
 		isOnline := wol.IsOnline(device.IPAddress)
 
 		if isOnline {
-			devices[i].Status = "Online"
+			devices[i].State = "Online"
 		} else {
-			devices[i].Status = "Offline"
+			devices[i].State = "Offline"
 		}
 	}
 
