@@ -1,6 +1,7 @@
 package list
 
 import (
+	"fmt"
 	"strconv"
 	"wakey/config"
 	"wakey/device"
@@ -20,13 +21,16 @@ type Model struct {
 	keys    keyMap
 	help    help.Model
 	table   table.Model
-	status  string
+	status  error
 }
 
 // InitialModel function for the Device model
 func InitialModel() tea.Model {
-	// Get devices from config
-	devices := config.ReadConfig().Devices
+	// Create the config file if it	doesn't exist
+	status := config.CreateConfig()
+
+	// Update the Status of the devices
+	devices := config.UpdateStatus().Devices
 
 	// Define table columns
 	columns := []table.Column{
@@ -77,32 +81,11 @@ func InitialModel() tea.Model {
 		// A map which indicates which devices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
 		// of the `devices` slice, above.
-		keys:  keys,
-		help:  help.New(),
-		table: t,
+		keys:   keys,
+		help:   help.New(),
+		table:  t,
+		status: status,
 	}
-}
-
-// Update the status of the devices
-func (m Model) UpdateStatus() {
-	// Get the devices
-	devices := config.ReadConfig().Devices
-
-	// Loop through the devices
-	for i, device := range devices {
-
-		// Get the status of the device
-		isOnline := wol.IsOnline(device.IPAddress)
-
-		if isOnline {
-			devices[i].Status = "Online"
-		} else {
-			devices[i].Status = "Offline"
-		}
-	}
-
-	// Write to the config file
-	config.WriteConfig(config.Config{Devices: devices})
 }
 
 // Init function for the Device model
@@ -148,7 +131,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Refresh the table
 		case key.Matches(msg, m.keys.Refresh):
-			m.UpdateStatus()
+			// clear screen
+			return InitialModel(), nil
 
 		// Toggle help
 		case key.Matches(msg, m.keys.Help):
@@ -167,7 +151,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			// Write the status message
 			deviceName := selected[0]
-			m.status = "Waking up " + deviceName + " (" + macAddress + ")"
+			m.status = fmt.Errorf("Waking up " + deviceName + " (" + macAddress + ")")
 
 		// These keys should exit the program.
 		case key.Matches(msg, m.keys.Quit):
@@ -210,7 +194,13 @@ func (m Model) View() string {
 	s += style.DeviceCountStyle.Render(" Number of devices: "+strconv.Itoa(len(m.table.Rows()))) + "\n" // srtconv.Itoa converts int to string
 
 	// Status message
-	s += style.StatusStyle.Render("Status: "+style.StatusMessageStyle.Render(m.status)) + "\n"
+	var statusMessage string
+	if m.status != nil {
+		statusMessage = m.status.Error()
+	} else {
+		statusMessage = "No status"
+	}
+	s += style.StatusStyle.Render("Status: "+style.StatusMessageStyle.Render(statusMessage)) + "\n"
 
 	// Help text
 	s += m.help.View(m.keys)

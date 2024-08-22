@@ -114,7 +114,7 @@ func IsOnline(ip string) bool {
 		panic(err)
 	}
 	pinger.Count = 1
-	pinger.Timeout = time.Second * 5 // 5 seconds
+	pinger.Timeout = time.Second * 1 // 1 seconds
 	pinger.Run()                     // blocks until finished
 	stats := pinger.Statistics()     // get send/receive/rtt stats
 
