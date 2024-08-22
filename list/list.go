@@ -118,7 +118,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		// Create new device
 		case key.Matches(msg, m.keys.New):
-			return device.InitialModel(func() tea.Model { return m }), nil
+			return device.InitialModel(m), nil
 
 		// Delete device
 		case key.Matches(msg, m.keys.Delete):
