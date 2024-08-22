@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"os"
 
+	"wakey/config"
 	"wakey/list"
+	"wakey/status"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
+	status.Message = config.CreateConfig()
 	// Create a new program and open the alternate screen
 	p := tea.NewProgram(list.InitialModel(), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {

@@ -6,6 +6,7 @@ import (
 	"wakey/config"
 	"wakey/device"
 	"wakey/popup"
+	"wakey/status"
 	"wakey/style"
 	"wakey/wol"
 
@@ -27,7 +28,6 @@ type Model struct {
 // InitialModel function for the Device model
 func InitialModel() tea.Model {
 	// Create the config file if it	doesn't exist
-	status := config.CreateConfig()
 
 	// Get devices with updated state
 	devices := config.GetUpdateState().Devices
@@ -81,10 +81,9 @@ func InitialModel() tea.Model {
 		// A map which indicates which devices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
 		// of the `devices` slice, above.
-		keys:   keys,
-		help:   help.New(),
-		table:  t,
-		status: status,
+		keys:  keys,
+		help:  help.New(),
+		table: t,
 	}
 }
 
@@ -143,15 +142,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Get the selected device
 			selected := m.table.SelectedRow()
 
-			// Get the device MAC address
-			macAddress := selected[2]
-
 			// Wake the device
-			wol.WakeDevice(macAddress)
+			wol.WakeDevice(selected[2])
 
 			// Write the status message
-			deviceName := selected[0]
-			m.status = fmt.Errorf("Waking up " + deviceName + " (" + macAddress + ")")
+			status.Message = fmt.Errorf("waking up [%s] (%s)", selected[0], selected[2])
 
 		// These keys should exit the program.
 		case key.Matches(msg, m.keys.Quit):
@@ -196,8 +191,8 @@ func (m Model) View() string {
 
 	// Status message
 	var statusMessage string
-	if m.status != nil {
-		statusMessage = m.status.Error()
+	if status.Message != nil {
+		statusMessage = status.Message.Error()
 	} else {
 		statusMessage = "No status"
 	}

@@ -3,6 +3,7 @@ package popup
 import (
 	"fmt"
 	"wakey/config"
+	"wakey/status"
 	"wakey/style"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -47,11 +48,13 @@ func (m PopupMsg) handleYes() (tea.Model, tea.Cmd) {
 	for i, device := range currentConfig.Devices {
 		if device.DeviceName == selected[0] {
 			currentConfig.Devices = append(currentConfig.Devices[:i], currentConfig.Devices[i+1:]...)
+			status.Message = fmt.Errorf("device [%s] (%s) removed", selected[0], selected[2])
 			break
 		}
 	}
 
 	config.WriteConfig(currentConfig)
+
 	return m.previousModel, func() tea.Msg {
 		return tea.ClearScreen()
 	}

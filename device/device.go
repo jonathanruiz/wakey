@@ -3,6 +3,7 @@ package device
 import (
 	"fmt"
 	"wakey/config"
+	"wakey/status"
 	"wakey/style"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -146,6 +147,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 					// Write the the new version of the config to the file
 					config.WriteConfig(updatedConfig)
+
+					// Set the status message
+					status.Message = fmt.Errorf("device [%s] added", m.inputs[0].Value())
 
 					// Return to the list and clear the screen
 					return m.switchToList(), func() tea.Msg {
