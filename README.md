@@ -10,16 +10,28 @@ The computer is woken up by sending a "magic packet" that contains the MAC addre
 
 ## Installation
 
+### MacOS
+
 For MacOS users, you can install `wakey` using Homebrew:
 
 ```bash
 brew install wakey
 ```
 
-For Windows and Linux users, you can install `wakey` using the following commands:
+For manual installation, you can install `wakey` using the `install.sh` script:
 
 ```bash
+# Clone the repository
 git clone https://github.com/jonathanruiz/wakey.git
+
+# Change directory to the wakey folder
+cd wakey
+
+# Modify the permissions of the install script to make it executable
+chmod +x install.sh
+
+# Run the install script
+sudo ./install.sh
 ```
 
 ## Running the application
