@@ -24,8 +24,9 @@ jobs:
 
       - name: Build
         run: |
-          GOOS=darwin GOARCH=amd64 go build -o ${{ env.APP_NAME }} -v
-          GOOS=windows GOARCH=amd64 go build -o ${{ env.APP_NAME }}.exe -v
+          GOOS=linux GOARCH=amd64 go build -o ${{ env.APP_NAME }}_linux_amd64 -v
+          GOOS=darwin GOARCH=amd64 go build -o ${{ env.APP_NAME }}_darwin_amd64 -v
+          GOOS=windows GOARCH=amd64 go build -o ${{ env.APP_NAME }}_windows_amd64.exe -v
 
       - name: Test
         run: go test ./tests/config_test.go -v
@@ -37,8 +38,9 @@ jobs:
         with:
           tag_name: ${{ env.RELEASE_VERSION }}
           files: |
-            ${{ env.APP_NAME }}
-            ${{ env.APP_NAME }}.exe
+            ${{ env.APP_NAME }}_linux_amd64
+            ${{ env.APP_NAME }}_darwin_amd64
+            ${{ env.APP_NAME }}_windows_amd64.exe
 
       - name: Print SHA
         run: shasum -a 256 ${{ env.APP_NAME }} ${{ env.APP_NAME }}.exe
