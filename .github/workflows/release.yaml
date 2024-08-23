@@ -1,6 +1,7 @@
 name: Wakey Production Release
 
 env:
+  USERNAME: jonathanruiz
   APP_NAME: wakey
   RELEASE_VERSION: v1.0.0
 
@@ -31,6 +32,9 @@ jobs:
       - name: Test
         run: go test ./tests/config_test.go -v
 
+      - name: Print SHA for Homebrew
+        run: shasum -a 256 ${{ env.APP_NAME }}_linux_amd64 ${{ env.APP_NAME }}_darwin_amd64 ${{ env.APP_NAME }}_windows_amd64.exe > sha256checksums.txt
+
       - name: Create release and attach artifacts
         uses: softprops/action-gh-release@v2
         env:
@@ -41,6 +45,35 @@ jobs:
             ${{ env.APP_NAME }}_linux_amd64
             ${{ env.APP_NAME }}_darwin_amd64
             ${{ env.APP_NAME }}_windows_amd64.exe
+            sha256checksums.txt
 
-      - name: Print SHA for Homebrew
-        run: shasum -a 256 ${{ env.APP_NAME }}_linux_amd64 ${{ env.APP_NAME }}_darwin_amd64 ${{ env.APP_NAME }}_windows_amd64.exe
+      - name: Create Homebrew formula
+        run: |
+          SHA256=$(grep "${{ env.APP_NAME }}_darwin_amd64" sha256checksums.txt | awk '{ print $1 }')
+          FORMULA="class ${env.APP_NAME^} < Formula
+          desc \"A TUI built for managing and waking your devices using Wake-on-LAN.\"
+          homepage \"https://github.com/${{ env.USERNAME }}/${{ env.APP_NAME }}\"
+          url \"https://github.com/${{ env.USERNAME }}/${{ env.APP_NAME }}/releases/download/${{ env.RELEASE_VERSION }}/${{ env.APP_NAME }}_darwin_amd64\"
+          sha256 \"$SHA256\"
+          version \"${{ env.RELEASE_VERSION }}\"
+
+          def install
+            bin.install \"${{ env.APP_NAME }}_darwin_amd64\" => \"${{ env.APP_NAME }}\"
+          end
+
+          test do
+            system \"#{bin}/${{ env.APP_NAME }}\"
+          end
+          "
+          echo "$FORMULA" > ${{ env.APP_NAME }}.rb
+
+      - name: Push formula to Homebrew tap
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git clone https://github.com/${{ env.USERNAME }}/homebrew-tap.git
+          cd homebrew-tap
+          mv ../${{ env.APP_NAME }}.rb Formula/
+          git add Formula/${{ env.APP_NAME }}.rb
+          git commit -m "Update formula for ${{ env.RELEASE_VERSION }}"
+          git push
