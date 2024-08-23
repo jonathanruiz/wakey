@@ -52,18 +52,18 @@ jobs:
           SHA256=$(grep "${{ env.APP_NAME }}_darwin_amd64" sha256checksums.txt | awk '{ print $1 }')
           FORMULA="
           class Wakey < Formula
-            desc "A TUI built for managing and waking your devices using Wake-on-LAN."
-            homepage "https://github.com/${{ env.USERNAME }}/${{ env.APP_NAME }}"
-            url "https://github.com/${{ env.USERNAME }}/${{ env.APP_NAME }}/releases/download/${{ env.RELEASE_VERSION }}/${{ env.APP_NAME }}_darwin_amd64"
-            sha256 "$SHA256"
-            version "${{ env.RELEASE_VERSION }}"
+            desc \"A TUI built for managing and waking your devices using Wake-on-LAN.\"
+            homepage \"https://github.com/${{ env.USERNAME }}/${{ env.APP_NAME }}\"
+            url \"https://github.com/${{ env.USERNAME }}/${{ env.APP_NAME }}/releases/download/${{ env.RELEASE_VERSION }}/${{ env.APP_NAME }}_darwin_amd64\"
+            sha256 \"$SHA256\"
+            version \"${{ env.RELEASE_VERSION }}\"
 
           def install
-            bin.install "${{ env.APP_NAME }}_darwin_amd64" => "${{ env.APP_NAME }}"
+            bin.install \"${{ env.APP_NAME }}_darwin_amd64\" => \"${{ env.APP_NAME }}\"
           end
 
           test do
-            system "#{bin}/${{ env.APP_NAME }}"
+            system \"#{bin}/${{ env.APP_NAME }}\"
           end
           "
           echo "$FORMULA" > ${{ env.APP_NAME }}.rb
