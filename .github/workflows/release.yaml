@@ -82,4 +82,4 @@ jobs:
           git add ./${{ env.APP_NAME }}.rb
           git commit -m "Update formula for ${{ env.RELEASE_VERSION }}"
           ls
-          git push https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/${{ env.USERNAME }}/homebrew-tap.git
+          git push https://x-access-token:${{ secrets.HOMEBREW_TAP_TOKEN }}@github.com/${{ env.USERNAME }}/homebrew-tap.git
