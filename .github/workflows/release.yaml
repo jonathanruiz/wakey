@@ -69,6 +69,8 @@ jobs:
           echo "$FORMULA" > ${{ env.APP_NAME }}.rb
 
       - name: Push formula to Homebrew tap
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git clone https://github.com/${{ env.USERNAME }}/homebrew-tap.git
           cd homebrew-tap
@@ -79,4 +81,4 @@ jobs:
           mv ../${{ env.APP_NAME }}.rb .
           git add ./${{ env.APP_NAME }}.rb
           git commit -m "Update formula for ${{ env.RELEASE_VERSION }}"
-          git push origin main
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ env.USERNAME }}/homebrew-tap.git main
