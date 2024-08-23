@@ -43,4 +43,4 @@ jobs:
             ${{ env.APP_NAME }}_windows_amd64.exe
 
       - name: Print SHA for Homebrew
-        run: shasum -a 256 ${{ env.APP_NAME }}_darwin_amd64
+        run: shasum -a 256 ${{ env.APP_NAME }}_linux_amd64 ${{ env.APP_NAME }}_darwin_amd64 ${{ env.APP_NAME }}_windows_amd64.exe
