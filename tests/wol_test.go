@@ -6,9 +6,11 @@ import (
 )
 
 func TestIsOnline(t *testing.T) {
-	// Added
-	online := wol.IsOnline("microsoft.com")
+	ipAddress := "4.213.106.96"
+
+	// Note: This is a simple test and may need to be adjusted for your environment
+	online := wol.IsOnline(ipAddress)
 	if !online {
-		t.Errorf("Expected microsoft.com to be online")
+		t.Errorf("Expected %s to be online", ipAddress)
 	}
 }
