@@ -2,6 +2,8 @@
 
 A TUI built on Charm CLI tools for managing and waking your devices using Wake-on-LAN.
 
+![Wake demo](./vhs/demo.gif)
+
 ## What is Wake-on-LAN?
 
 Wake-on-LAN (WoL) is an Ethernet or Token Ring computer networking standard that allows a computer to be turned on or awakened by a network message.
@@ -42,13 +44,25 @@ To run the application, you can use the following command:
 wakey
 ```
 
+![Running wakey](./vhs/init.gif)
+
 ## Usage
+
+### List of devices
 
 Running the application will immediately display a list of devices that you can wake up. Within the application, you be able to add your own devices along with additional details.
 
 You can navigate through the list using the arrow keys or VIM motions navigation and press `Enter` to wake up the selected device.
 
-You can also press `ctrl + h` to display all the available keybindings.
+### Refreshing the list
+
+When in the list view, you can press `r` to refresh the list of devices. This will update the status of the devices in the list to determine if they are online or offline. The way the application determines if a device is online or offline is by pinging the device's IP address.
+
+### View more keybindings
+
+You can also press `ctrl + h` to display all the available keybindings. Keybidings vary between different parts of the applicaiton so make sure to check the keybindings when you are in a specific view.
+
+![View more keybindings](./vhs/help.gif)
 
 ## Configuration
 
