@@ -6,7 +6,7 @@ import (
 )
 
 func TestIsOnline(t *testing.T) {
-	ipAddress := "4.213.106.96"
+	ipAddress := "1.1.1.1"
 
 	// Note: This is a simple test and may need to be adjusted for your environment
 	online := wol.IsOnline(ipAddress)
