@@ -1,0 +1,44 @@
+name: Wakey Production Release
+
+env:
+  APP_NAME: wakey
+  RELEASE_VERSION: v1.0.0
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22.6
+
+      - name: Build
+        run: |
+          GOOS=linux GOARCH=amd64 go build -o ${{ env.APP_NAME }} -v
+          GOOS=darwin GOARCH=amd64 go build -o ${{ env.APP_NAME }} -v
+          GOOS=windows GOARCH=amd64 go build -o ${{ env.APP_NAME }}.exe -v
+
+      - name: Test
+        run: go test ./tests -v
+
+      - name: Create release and attach artifacts
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_VERSION }}
+          files: |
+            ${{ env.APP_NAME }}
+            ${{ env.APP_NAME }}.exe
+            ${{ env.APP_NAME }}
+
+      - name: Print SHA
+        run: shasum -a 256 ${{ env.APP_NAME }} ${{ env.APP_NAME }}.exe
