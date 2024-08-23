@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"wakey/config"
-	"wakey/list"
-	"wakey/status"
+	"wakey/internal/config"
+	"wakey/internal/list"
+	"wakey/internal/status"
 
 	tea "github.com/charmbracelet/bubbletea"
 )

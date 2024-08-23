@@ -3,12 +3,12 @@ package list
 import (
 	"fmt"
 	"strconv"
-	"wakey/config"
-	"wakey/device"
-	"wakey/popup"
-	"wakey/status"
-	"wakey/style"
-	"wakey/wol"
+	"wakey/internal/config"
+	"wakey/internal/device"
+	"wakey/internal/popup"
+	"wakey/internal/status"
+	"wakey/internal/style"
+	"wakey/internal/wol"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
