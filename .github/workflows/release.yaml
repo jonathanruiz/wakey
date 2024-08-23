@@ -72,7 +72,7 @@ jobs:
         env:
           HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
-          git clone https://github.com/${{ env.HOMEBREW_TAP_TOKEN }}/homebrew-tap.git
+          git clone https://github.com/${{ env.USERNAME }}/homebrew-tap.git
           cd homebrew-tap
 
           git config user.name "github-actions[bot]"
