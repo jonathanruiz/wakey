@@ -55,6 +55,7 @@ func InitialModel() tea.Model {
 		table.WithColumns(columns),
 		table.WithRows(rows),
 		table.WithFocused(true),
+		table.WithHeight(10),
 	)
 
 	// Set the custom key bindings
@@ -163,6 +164,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View function for the Device model
 func (m Model) View() string {
 
+	const maxRows = 10 // Define the maximum number of rows to display
+
 	// Get updated config file
 	newConfig := config.ReadConfig()
 
@@ -173,6 +176,11 @@ func (m Model) View() string {
 		// This will make sure to output all the data for the device
 		// The order of the columns must match the order of the columns in the table
 		rows = append(rows, table.Row{device.DeviceName, device.Description, device.MacAddress, device.IPAddress, device.State})
+	}
+
+	// Truncate rows if they exceed the maximum number
+	if len(rows) > maxRows {
+		rows = rows[:maxRows]
 	}
 
 	// Update the table with the new rows
