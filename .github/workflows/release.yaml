@@ -53,7 +53,7 @@ jobs:
           FORMULA="
           class Wakey < Formula
             desc \"A TUI built for managing and waking your devices using Wake-on-LAN.\"
-            homepage \"https://${{env.USERNAME}}:${HOMEBREW_TAP_TOKEN}@github.com/${{ env.USERNAME }}/${{ env.APP_NAME }}\"
+            homepage \"https://github.com/${{ env.USERNAME }}/${{ env.APP_NAME }}\"
             url \"https://github.com/${{ env.USERNAME }}/${{ env.APP_NAME }}/releases/download/${{ env.RELEASE_VERSION }}/${{ env.APP_NAME }}_darwin_amd64\"
             sha256 \"$SHA256\"
             version \"${{ env.RELEASE_VERSION }}\"
@@ -72,7 +72,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
-          git clone https://github.com/${{ env.USERNAME }}/homebrew-tap.git
+          git clone https://${{ env.USERNAME }}:${{ secrets.HOMEBREW_TAP_TOKEN }}@github.com/${{ env.USERNAME }}/homebrew-tap.git
           cd homebrew-tap
 
           git config user.name "github-actions[bot]"
