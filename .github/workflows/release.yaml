@@ -81,4 +81,4 @@ jobs:
           mv ../${{ env.APP_NAME }}.rb .
           git add ./${{ env.APP_NAME }}.rb
           git commit -m "Update formula for ${{ env.RELEASE_VERSION }}"
-          git push
+          git push origin main
