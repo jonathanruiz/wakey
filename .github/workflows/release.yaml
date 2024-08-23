@@ -81,4 +81,5 @@ jobs:
           mv ../${{ env.APP_NAME }}.rb .
           git add ./${{ env.APP_NAME }}.rb
           git commit -m "Update formula for ${{ env.RELEASE_VERSION }}"
-          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ env.USERNAME }}/homebrew-tap.git main
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ env.USERNAME }}/homebrew-tap.git
+          git push origin main
