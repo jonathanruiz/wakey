@@ -24,7 +24,6 @@ jobs:
 
       - name: Build
         run: |
-          GOOS=linux GOARCH=amd64 go build -o ${{ env.APP_NAME }} -v
           GOOS=darwin GOARCH=amd64 go build -o ${{ env.APP_NAME }} -v
           GOOS=windows GOARCH=amd64 go build -o ${{ env.APP_NAME }}.exe -v
 
@@ -40,7 +39,6 @@ jobs:
           files: |
             ${{ env.APP_NAME }}
             ${{ env.APP_NAME }}.exe
-            ${{ env.APP_NAME }}
 
       - name: Print SHA
         run: shasum -a 256 ${{ env.APP_NAME }} ${{ env.APP_NAME }}.exe
