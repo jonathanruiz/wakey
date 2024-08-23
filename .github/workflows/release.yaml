@@ -69,10 +69,8 @@ jobs:
           echo "$FORMULA" > ${{ env.APP_NAME }}.rb
 
       - name: Push formula to Homebrew tap
-        env:
-          GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
-          git clone https://${{ env.USERNAME }}:${{ secrets.HOMEBREW_TAP_TOKEN }}@github.com/${{ env.USERNAME }}/homebrew-tap.git
+          git clone https://github.com/${{ env.USERNAME }}/homebrew-tap.git
           cd homebrew-tap
 
           git config user.name "github-actions[bot]"
