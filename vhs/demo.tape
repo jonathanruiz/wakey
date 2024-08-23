@@ -40,7 +40,7 @@ Type "a1:b2:c3:d4:e5:f6"
 Tab
 
 # Enter device IP Address
-Type "192.168.0.15"
+Type "10.1.34.1"
 
 # Go to next input
 Tab
@@ -75,6 +75,13 @@ Sleep 1s
 # Wake device
 Enter
 
+# Wait
+Sleep 5s
+
+# Refresh devices
+Type "r"
+
+# Refresh devices
 Sleep 5s
 
 Hide
