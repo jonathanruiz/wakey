@@ -37,8 +37,6 @@ jobs:
 
       - name: Create release and attach artifacts
         uses: softprops/action-gh-release@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.RELEASE_VERSION }}
           files: |
@@ -69,8 +67,6 @@ jobs:
           echo "$FORMULA" > ${{ env.APP_NAME }}.rb
 
       - name: Push formula to Homebrew tap
-        env:
-          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
           git clone https://github.com/${{ env.USERNAME }}/homebrew-tap.git
           cd homebrew-tap
