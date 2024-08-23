@@ -17,6 +17,10 @@ The computer is woken up by sending a "magic packet" that contains the MAC addre
 For MacOS users, you can install `wakey` using Homebrew:
 
 ```bash
+# Tap the repository
+brew tap jonathanruiz/wakey
+
+# Install wakey
 brew install wakey
 ```
 
