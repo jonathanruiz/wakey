@@ -74,7 +74,7 @@ jobs:
         run: |
           git clone https://github.com/${{ env.USERNAME }}/homebrew-tap.git
           cd homebrew-tap
-          mv ../${{ env.APP_NAME }}.rb Formula/
-          git add Formula/${{ env.APP_NAME }}.rb
+          mv ../${{ env.APP_NAME }}.rb .
+          git add ./${{ env.APP_NAME }}.rb
           git commit -m "Update formula for ${{ env.RELEASE_VERSION }}"
           git push
