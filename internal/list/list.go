@@ -121,7 +121,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Edit):
 			// Get the selected device
 			selected := m.table.SelectedRow()
-			return device.EditDeviceModel(selected, m), nil
+			return device.InitialModel(m, selected), nil
 
 		// Delete device
 		case key.Matches(msg, m.keys.Delete):
