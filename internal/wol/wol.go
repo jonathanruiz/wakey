@@ -133,10 +133,7 @@ func IsOnline(ip string) bool {
 	pinger.Count = 1
 	pinger.Timeout = time.Second * 1 // 1 seconds
 
-	err = pinger.Run() // blocks until finished
-	if err != nil {
-		panic(err)
-	}
+	pinger.Run() // blocks until finished
 
 	stats := pinger.Statistics() // get send/receive/rtt stats
 
