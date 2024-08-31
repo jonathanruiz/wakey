@@ -27,10 +27,11 @@ type Model struct {
 	currentConfig config.Config
 	keys          keyMap
 	help          help.Model
+	selectedRow   []string
 }
 
 // InitialModel returns the initial model for the Device component
-func InitialModel(previousModel tea.Model) Model {
+func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 	m := Model{
 		err:           make([]error, 4),           // Initialize the slice with length 4
 		inputs:        make([]textinput.Model, 4), // Initialize the slice with length 4
@@ -38,6 +39,11 @@ func InitialModel(previousModel tea.Model) Model {
 		keys:          keys,
 		help:          help.New(),
 		previousModel: previousModel,
+	}
+
+	// Check if this is an edit operation
+	if len(selectedRow) > 0 {
+		m.selectedRow = selectedRow[0]
 	}
 
 	// Create a new text input model for each input field
@@ -57,18 +63,34 @@ func InitialModel(previousModel tea.Model) Model {
 			ti.Focus()
 			ti.PromptStyle = style.FocusedStyle
 			ti.TextStyle = style.FocusedStyle
+
+			if selectedRow != nil {
+				ti.SetValue(selectedRow[0][0])
+			}
 		// Description
 		case 1:
 			ti.Prompt = "Description   : "
 			ti.Placeholder = "Enter a description for the device"
+
+			if selectedRow != nil {
+				ti.SetValue(selectedRow[0][1])
+			}
 		// MAC address
 		case 2:
 			ti.Prompt = "MAC Address   : "
 			ti.Placeholder = "00:00:00:00:00:00"
+
+			if selectedRow != nil {
+				ti.SetValue(selectedRow[0][2])
+			}
 		// IP address
 		case 3:
 			ti.Prompt = "IP Address    : "
 			ti.Placeholder = "0.0.0.0"
+
+			if selectedRow != nil {
+				ti.SetValue(selectedRow[0][3])
+			}
 		}
 
 		// Add the textinput model to the slice
@@ -130,22 +152,42 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, nil
 					}
 
-					// Append the device to the config
-					updatedDevices := append(m.currentConfig.Devices, config.Device{
-						DeviceName:  m.inputs[0].Value(),
-						Description: m.inputs[1].Value(),
-						MacAddress:  m.inputs[2].Value(),
-						IPAddress:   m.inputs[3].Value(),
-						State:       "Offline",
-					})
+					// Check if we are editing an existing device
+					if m.selectedRow != nil {
+						// Get the selected device
+						selected := m.selectedRow
 
-					// Create a new config with the updated devices
-					updatedConfig := config.Config{
-						Devices: updatedDevices,
+						// Update the device in the config
+						for i, device := range m.currentConfig.Devices {
+							if device.DeviceName == selected[0] {
+								m.currentConfig.Devices[i] = config.Device{
+									DeviceName:  m.inputs[0].Value(),
+									Description: m.inputs[1].Value(),
+									MacAddress:  m.inputs[2].Value(),
+									IPAddress:   m.inputs[3].Value(),
+									State:       "Offline",
+								}
+								break
+							}
+						}
+					} else {
+						// Append the device to the config
+						updatedDevices := append(m.currentConfig.Devices, config.Device{
+							DeviceName:  m.inputs[0].Value(),
+							Description: m.inputs[1].Value(),
+							MacAddress:  m.inputs[2].Value(),
+							IPAddress:   m.inputs[3].Value(),
+							State:       "Offline",
+						})
+
+						// Create a new config with the updated devices
+						m.currentConfig = config.Config{
+							Devices: updatedDevices,
+						}
 					}
 
 					// Write the the new version of the config to the file
-					config.WriteConfig(updatedConfig)
+					config.WriteConfig(m.currentConfig)
 
 					// Set the status message
 					status.Message = fmt.Errorf("device [%s] (%s) added", m.inputs[0].Value(), m.inputs[2].Value())
@@ -189,14 +231,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			return m, tea.Batch(cmds...)
 		}
-
 	}
 
 	// Handle character input and blinking
 	cmd := m.updateInputs(msg)
 
 	return m, cmd
-
 }
 
 // Define the DeleteDevicePopup function

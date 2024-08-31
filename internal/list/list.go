@@ -115,8 +115,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Check which key was pressed
 		switch {
 		// Create new device
-		case key.Matches(msg, m.keys.New):
+		case key.Matches(msg, m.keys.Create):
 			return device.InitialModel(m), nil
+
+		case key.Matches(msg, m.keys.Edit):
+			// Get the selected device
+			selected := m.table.SelectedRow()
+			return device.InitialModel(m, selected), nil
 
 		// Delete device
 		case key.Matches(msg, m.keys.Delete):

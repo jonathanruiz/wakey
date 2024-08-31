@@ -1,6 +1,9 @@
 package device
 
-import "fmt"
+import (
+	"fmt"
+	"regexp"
+)
 
 func (m *Model) deviceNameValidator(value string) error {
 	// Check if the value is empty
@@ -28,15 +31,10 @@ func (m *Model) descriptionValidator(value string) error {
 }
 
 func (m *Model) macAddressValidator(value string) error {
-	var a, b, c, d, e, f int
+	// Regular expression to match valid MAC addresses
+	var macAddressRegex = regexp.MustCompile(`^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$`)
 
-	// Check if the value is empty
-	if value == "" {
-		return fmt.Errorf("mac address is required")
-	}
-
-	// Check if the value is a valid MAC address
-	if _, err := fmt.Sscanf(value, "%2x:%2x:%2x:%2x:%2x:%2x", &a, &b, &c, &d, &e, &f); err != nil {
+	if !macAddressRegex.MatchString(value) {
 		return fmt.Errorf("invalid mac address")
 	}
 

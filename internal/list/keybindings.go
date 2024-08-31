@@ -8,7 +8,8 @@ type keyMap struct {
 	Up      key.Binding
 	Down    key.Binding
 	Enter   key.Binding
-	New     key.Binding
+	Create  key.Binding
+	Edit    key.Binding
 	Delete  key.Binding
 	Refresh key.Binding
 	Help    key.Binding
@@ -18,16 +19,16 @@ type keyMap struct {
 // ShortHelp returns keybindings to be shown in the mini help view. It's part
 // of the key.Map interface.
 func (k keyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.New, k.Enter, k.Help, k.Quit}
+	return []key.Binding{k.Create, k.Enter, k.Help, k.Quit}
 }
 
 // FullHelp returns keybindings for the expanded help view. It's part of the
 // key.Map interface.
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down},                        // first column
-		{k.Enter, k.New, k.Delete, k.Refresh}, // second column
-		{k.Help, k.Quit},                      // third column
+		{k.Up, k.Down}, // first column
+		{k.Enter, k.Create, k.Edit, k.Delete, k.Refresh}, // second column
+		{k.Help, k.Quit}, // third column
 	}
 }
 
@@ -45,9 +46,13 @@ var keys = keyMap{
 		key.WithKeys("enter"),
 		key.WithHelp("enter", "wake"),
 	),
-	New: key.NewBinding(
+	Create: key.NewBinding(
 		key.WithKeys("c"),
 		key.WithHelp("c", "create device"),
+	),
+	Edit: key.NewBinding(
+		key.WithKeys("e"),
+		key.WithHelp("e", "edit device"),
 	),
 	Delete: key.NewBinding(
 		key.WithKeys("d"),
