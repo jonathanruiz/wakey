@@ -5,7 +5,7 @@ go 1.22.6
 require (
 	github.com/charmbracelet/bubbletea v0.26.6
 	github.com/charmbracelet/lipgloss v0.9.1
-	github.com/go-ping/ping v1.1.0
+	github.com/prometheus-community/pro-bing v0.4.1
 	golang.org/x/term v0.23.0
 )
 
@@ -17,7 +17,6 @@ require (
 	github.com/mattn/go-isatty v0.0.18 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
-	github.com/prometheus-community/pro-bing v0.4.1 // indirect
 	golang.org/x/net v0.28.0 // indirect
 )
 
