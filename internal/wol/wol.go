@@ -9,7 +9,6 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/go-ping/ping"
 	probing "github.com/prometheus-community/pro-bing"
 )
 
@@ -109,31 +108,12 @@ func WakeDevice(mac string) error {
 	return nil
 }
 
-// Ping the device
-func IsOnline(ip string) bool {
-	pinger, err := ping.NewPinger(ip)
-	if err != nil {
-		panic(err)
-	}
-	pinger.Count = 1
-	pinger.Timeout = time.Second * 1 // 1 seconds
-	pinger.Run()                     // blocks until finished
-	stats := pinger.Statistics()     // get send/receive/rtt stats
-
-	if stats.PacketsRecv > 0 {
-		return true
-	} else {
-		return false
-	}
-
-}
-
 func checkOS() string {
 	return runtime.GOOS
 }
 
-// Recreate the IsOnline function using github.com/prometheus-community/pro-bing
-func IsOnlineProBing(ip string) bool {
+// Ping the device
+func IsOnline(ip string) bool {
 
 	// Get OS
 	userOS := checkOS()
