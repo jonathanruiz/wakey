@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"net"
 	"regexp"
+	"runtime"
 	"time"
 
 	"github.com/go-ping/ping"
+	probing "github.com/prometheus-community/pro-bing"
 )
 
 var (
@@ -124,4 +126,43 @@ func IsOnline(ip string) bool {
 		return false
 	}
 
+}
+
+func checkOS() string {
+	return runtime.GOOS
+}
+
+// Recreate the IsOnline function using github.com/prometheus-community/pro-bing
+func IsOnlineProBing(ip string) bool {
+
+	// Get OS
+	userOS := checkOS()
+
+	pinger, err := probing.NewPinger(ip)
+	if err != nil {
+		panic(err)
+	}
+
+	// Check if the user is using Windows
+	// If the user is using Windows, use then set the pinger to use the Windows implementation
+	// If the user is not using Windows, use the default implementation
+	if userOS == "windows" {
+		pinger.SetPrivileged(true)
+	}
+
+	pinger.Count = 1
+	pinger.Timeout = time.Second * 1 // 1 seconds
+
+	err = pinger.Run() // blocks until finished
+	if err != nil {
+		panic(err)
+	}
+
+	stats := pinger.Statistics() // get send/receive/rtt stats
+
+	if stats.PacketsRecv > 0 {
+		return true
+	} else {
+		return false
+	}
 }
