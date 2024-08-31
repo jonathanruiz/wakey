@@ -27,6 +27,7 @@ type Model struct {
 	currentConfig config.Config
 	keys          keyMap
 	help          help.Model
+	selectedRow   []string
 }
 
 // InitialModel returns the initial model for the Device component
@@ -38,6 +39,11 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 		keys:          keys,
 		help:          help.New(),
 		previousModel: previousModel,
+	}
+
+	// Check if this is an edit operation
+	if len(selectedRow) > 0 {
+		m.selectedRow = selectedRow[0]
 	}
 
 	// Create a new text input model for each input field
@@ -146,22 +152,42 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, nil
 					}
 
-					// Append the device to the config
-					updatedDevices := append(m.currentConfig.Devices, config.Device{
-						DeviceName:  m.inputs[0].Value(),
-						Description: m.inputs[1].Value(),
-						MacAddress:  m.inputs[2].Value(),
-						IPAddress:   m.inputs[3].Value(),
-						State:       "Offline",
-					})
+					// Check if we are editing an existing device
+					if m.selectedRow != nil {
+						// Get the selected device
+						selected := m.selectedRow
 
-					// Create a new config with the updated devices
-					updatedConfig := config.Config{
-						Devices: updatedDevices,
+						// Update the device in the config
+						for i, device := range m.currentConfig.Devices {
+							if device.DeviceName == selected[0] {
+								m.currentConfig.Devices[i] = config.Device{
+									DeviceName:  m.inputs[0].Value(),
+									Description: m.inputs[1].Value(),
+									MacAddress:  m.inputs[2].Value(),
+									IPAddress:   m.inputs[3].Value(),
+									State:       "Offline",
+								}
+								break
+							}
+						}
+					} else {
+						// Append the device to the config
+						updatedDevices := append(m.currentConfig.Devices, config.Device{
+							DeviceName:  m.inputs[0].Value(),
+							Description: m.inputs[1].Value(),
+							MacAddress:  m.inputs[2].Value(),
+							IPAddress:   m.inputs[3].Value(),
+							State:       "Offline",
+						})
+
+						// Create a new config with the updated devices
+						m.currentConfig = config.Config{
+							Devices: updatedDevices,
+						}
 					}
 
 					// Write the the new version of the config to the file
-					config.WriteConfig(updatedConfig)
+					config.WriteConfig(m.currentConfig)
 
 					// Set the status message
 					status.Message = fmt.Errorf("device [%s] (%s) added", m.inputs[0].Value(), m.inputs[2].Value())
