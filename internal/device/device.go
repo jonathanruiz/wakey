@@ -199,6 +199,59 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 }
 
+// EditDeviceModel initializes the model for editing a device
+func EditDeviceModel(selectedRow []string, previousModel tea.Model) Model {
+	m := Model{
+		err:           make([]error, 4),           // Initialize the slice with length 4
+		inputs:        make([]textinput.Model, 4), // Initialize the slice with length 4
+		currentConfig: config.ReadConfig(),
+		keys:          keys,
+		help:          help.New(),
+		previousModel: previousModel,
+	}
+
+	// Create a new text input model for each input field
+	var ti textinput.Model
+
+	// Loop through the inputs and create a new text input model for each
+	for i := range m.inputs {
+		ti = textinput.New()
+		ti.Cursor.Style = style.FocusedStyle
+		ti.CharLimit = 64
+
+		switch i {
+		// Device name
+		case 0:
+			ti.Prompt = "Device Name   : "
+			ti.Placeholder = "Enter the device name"
+			ti.SetValue(selectedRow[0])
+			ti.Focus()
+			ti.PromptStyle = style.FocusedStyle
+			ti.TextStyle = style.FocusedStyle
+		// Description
+		case 1:
+			ti.Prompt = "Description   : "
+			ti.Placeholder = "Enter a description for the device"
+			ti.SetValue(selectedRow[1])
+		// MAC address
+		case 2:
+			ti.Prompt = "MAC Address   : "
+			ti.Placeholder = "00:00:00:00:00:00"
+			ti.SetValue(selectedRow[2])
+		// IP address
+		case 3:
+			ti.Prompt = "IP Address    : "
+			ti.Placeholder = "0.0.0.0"
+			ti.SetValue(selectedRow[3])
+		}
+
+		// Add the textinput model to the slice
+		m.inputs[i] = ti
+	}
+
+	return m
+}
+
 // Define the DeleteDevicePopup function
 func DeleteDevicePopup(deviceName, macAddress string, m tea.Model) (tea.Model, tea.Cmd) {
 	// Create a popup message for confirmation
