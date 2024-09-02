@@ -137,6 +137,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			status.Message = fmt.Errorf("refreshing devices")
 			return InitialModel(), tea.ClearScreen
 
+		case key.Matches(msg, m.keys.Group):
+			// Open the group view
+			return group.InitialModel(m), nil
+
 		// Toggle help
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
