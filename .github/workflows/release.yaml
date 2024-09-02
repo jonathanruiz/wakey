@@ -3,7 +3,6 @@ name: Wakey Production Release
 env:
   USERNAME: jonathanruiz
   APP_NAME: wakey
-  RELEASE_VERSION: v1.0.1
 
 on:
   push:
@@ -38,7 +37,7 @@ jobs:
       - name: Create release and attach artifacts
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.RELEASE_VERSION }}
+          tag_name: ${{ github.ref_name }}
           files: |
             ${{ env.APP_NAME }}_linux_amd64
             ${{ env.APP_NAME }}_darwin_amd64
@@ -51,9 +50,9 @@ jobs:
           FORMULA="class Wakey < Formula
             desc \"A TUI built for managing and waking your devices using Wake-on-LAN.\"
             homepage \"https://github.com/${{ env.USERNAME }}/${{ env.APP_NAME }}\"
-            url \"https://github.com/${{ env.USERNAME }}/${{ env.APP_NAME }}/releases/download/${{ env.RELEASE_VERSION }}/${{ env.APP_NAME }}_darwin_amd64\"
+            url \"https://github.com/${{ env.USERNAME }}/${{ env.APP_NAME }}/releases/download/${{ github.ref_name }}/${{ env.APP_NAME }}_darwin_amd64\"
             sha256 \"$SHA256\"
-            version \"${{ env.RELEASE_VERSION }}\"
+            version \"${{ github.ref_name }}\"
 
             def install
               bin.install \"${{ env.APP_NAME }}_darwin_amd64\" => \"${{ env.APP_NAME }}\"
@@ -76,5 +75,5 @@ jobs:
 
           mv ../${{ env.APP_NAME }}.rb .
           git add ./${{ env.APP_NAME }}.rb
-          git commit -m "Update formula for ${{ env.RELEASE_VERSION }}"
+          git commit -m "Update formula for ${{ github.ref_name }}"
           git push https://x-access-token:${{ secrets.HOMEBREW_TAP_TOKEN }}@github.com/${{ env.USERNAME }}/homebrew-tap.git HEAD:main
