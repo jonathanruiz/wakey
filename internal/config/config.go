@@ -14,6 +14,7 @@ type Device struct {
 	Description string `json:"Description"`
 	MacAddress  string `json:"MacAddress"`
 	IPAddress   string `json:"IPAddress"`
+	Group       string `json:"Group"`
 	State       string `json:"State"`
 }
 
