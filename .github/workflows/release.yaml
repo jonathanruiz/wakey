@@ -3,7 +3,6 @@ name: Wakey Production Release
 env:
   USERNAME: jonathanruiz
   APP_NAME: wakey
-  RELEASE_VERSION: v1.0.1
 
 on:
   push:
