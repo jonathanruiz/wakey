@@ -34,13 +34,14 @@ func InitialModel() tea.Model {
 	// Define table rows
 	rows := make([]table.Row, len(groups))
 	for i, group := range groups {
+		// Create a string of devices in the group
 		devicesInGroup := ""
-		for j, device := range group.Devices {
-			devicesInGroup += device
-			if j < len(group.Devices)-1 {
-				devicesInGroup += ", "
-			}
+		for _, device := range group.Devices {
+			devicesInGroup += device + ", "
 		}
+
+		// Remove the trailing comma and space
+		devicesInGroup = devicesInGroup[:len(devicesInGroup)-2]
 
 		rows[i] = table.Row{
 			group.GroupName,
