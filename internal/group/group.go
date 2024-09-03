@@ -93,6 +93,23 @@ func InitialModel(previousModel tea.Model) tea.Model {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+
+	// Get new number of rows
+	rows := make([]table.Row, len(config.ReadConfig().Groups))
+
+	// Update the table with the new rows
+	m.table.SetRows(rows)
+
+	// Define table rows
+	for i, group := range config.ReadConfig().Groups {
+		deviceValue := strings.Join(group.Devices, ", ")
+		m.table.Rows()[i] = table.Row{
+			group.GroupName,
+			deviceValue,
+		}
+	}
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
@@ -117,12 +134,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	var cmd tea.Cmd
-	m.table, cmd = m.table.Update(msg)
-	return m, cmd
+	newTable, cmd := m.table.Update(msg)
+	m.table = newTable
+	cmds = append(cmds, cmd)
+
+	return m, tea.Batch(cmds...)
 }
 
 func (m Model) View() string {
+	const maxRows = 10 // Define the maximum number of rows to display
+
 	// Get updated config file
 	newConfig := config.ReadConfig()
 
@@ -130,6 +151,11 @@ func (m Model) View() string {
 	for _, group := range newConfig.Groups {
 		deviceValue := strings.Join(group.Devices, ", ")
 		rows = append(rows, table.Row{group.GroupName, deviceValue})
+	}
+
+	// Truncate rows if they exceed the maximum number
+	if len(rows) > maxRows {
+		rows = rows[:maxRows]
 	}
 
 	// Update the table with the new rows
