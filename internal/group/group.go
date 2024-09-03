@@ -101,7 +101,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return newGroup.InitialModel(m), nil
 		case key.Matches(msg, m.keys.Edit):
 			// Edit the selected group
-			break
+			selected := m.table.SelectedRow()
+
+			return newGroup.InitialModel(m, selected), nil
 		case key.Matches(msg, m.keys.Delete):
 			// Delete the selected group
 			selected := m.table.SelectedRow()
