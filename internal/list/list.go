@@ -146,7 +146,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, m.keys.Group):
 			// Open the group view
-			return group.InitialModel(), tea.ClearScreen
+			return group.InitialModel(m), tea.ClearScreen
 
 		// Toggle help
 		case key.Matches(msg, m.keys.Help):

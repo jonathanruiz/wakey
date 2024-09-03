@@ -13,17 +13,18 @@ import (
 
 // Model for the Group component
 type Model struct {
-	groups []config.Group // list of groups
-	keys   keyMap
-	help   help.Model
-	table  table.Model
+	groups        []config.Group // list of groups
+	previousModel tea.Model
+	keys          keyMap
+	help          help.Model
+	table         table.Model
 }
 
 // Init function for the Device model
 func (m Model) Init() tea.Cmd { return nil }
 
 // InitialModel function for the Group model
-func InitialModel() tea.Model {
+func InitialModel(previousModel tea.Model) tea.Model {
 	// Get groups with updated state
 	groups := config.GetUpdateState().Groups
 
@@ -80,9 +81,10 @@ func InitialModel() tea.Model {
 		// A map which indicates which devices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
 		// of the `devices` slice, above.
-		keys:  keys,
-		help:  help.New(),
-		table: t,
+		previousModel: previousModel,
+		keys:          keys,
+		help:          help.New(),
+		table:         t,
 	}
 }
 
@@ -102,7 +104,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
 		case key.Matches(msg, m.keys.Quit):
-			return m, tea.Quit
+			return m.previousModel, tea.ClearScreen
 		}
 	}
 
