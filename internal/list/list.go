@@ -3,6 +3,7 @@ package list
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"wakey/internal/config"
 	"wakey/internal/device"
 	"wakey/internal/group"
@@ -36,17 +37,20 @@ func InitialModel() tea.Model {
 		{Title: "Description", Width: 30},
 		{Title: "MAC Address", Width: 20},
 		{Title: "IP Address", Width: 15},
+		{Title: "Group", Width: 15},
 		{Title: "State", Width: 15},
 	}
 
 	// Define table rows
 	rows := make([]table.Row, len(devices))
 	for i, device := range devices {
+		groupValue := strings.Join(device.Group, ", ")
 		rows[i] = table.Row{
 			device.DeviceName,
 			device.Description,
 			device.MacAddress,
 			device.IPAddress,
+			groupValue,
 			device.State,
 		}
 	}
@@ -101,11 +105,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// Define table rows
 	for i, device := range config.ReadConfig().Devices {
+		groupValue := strings.Join(device.Group, ", ")
 		m.table.Rows()[i] = table.Row{
 			device.DeviceName,
 			device.Description,
 			device.MacAddress,
 			device.IPAddress,
+			groupValue,
 			device.State,
 		}
 	}
@@ -182,10 +188,12 @@ func (m Model) View() string {
 	// Convert m.devices from []string to []table.Row
 	var rows []table.Row
 	for _, device := range newConfig.Devices {
+		groupValue := strings.Join(device.Group, ", ")
+
 		// Append the device to the rows
 		// This will make sure to output all the data for the device
 		// The order of the columns must match the order of the columns in the table
-		rows = append(rows, table.Row{device.DeviceName, device.Description, device.MacAddress, device.IPAddress, device.State})
+		rows = append(rows, table.Row{device.DeviceName, device.Description, device.MacAddress, device.IPAddress, groupValue, device.State})
 	}
 
 	// Truncate rows if they exceed the maximum number

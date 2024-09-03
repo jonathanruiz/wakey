@@ -164,6 +164,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					// Convert the Group value from string to []string
 					groupValue := strings.Split(m.inputs[4].Value(), ",")
 
+					// Remove any leading or trailing spaces
+					for i, group := range groupValue {
+						groupValue[i] = strings.TrimSpace(group)
+					}
+
 					// Check if we are editing an existing device
 					if m.selectedRow != nil {
 						// Get the selected device
