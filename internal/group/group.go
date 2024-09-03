@@ -2,6 +2,7 @@ package group
 
 import (
 	"wakey/internal/config"
+	"wakey/internal/newGroup"
 	"wakey/internal/status"
 	"wakey/internal/style"
 
@@ -94,7 +95,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, m.keys.Create):
 			// Create a new group
-			break
+			return newGroup.InitialModel(m), nil
 		case key.Matches(msg, m.keys.Edit):
 			// Edit the selected group
 			break
