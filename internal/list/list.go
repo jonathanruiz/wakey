@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"wakey/internal/config"
 	"wakey/internal/device"
+	"wakey/internal/group"
 	"wakey/internal/popup"
 	"wakey/internal/status"
 	"wakey/internal/style"
