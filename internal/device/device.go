@@ -2,6 +2,7 @@ package device
 
 import (
 	"fmt"
+	"strings"
 	"wakey/internal/config"
 	"wakey/internal/status"
 	"wakey/internal/style"
@@ -91,10 +92,10 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 			if selectedRow != nil {
 				ti.SetValue(selectedRow[0][3])
 			}
-		// IP address
+		// Groups
 		case 4:
 			ti.Prompt = "Groups        : "
-			ti.Placeholder = "Group1, Group2"
+			ti.Placeholder = "Group1,Group2"
 
 			if selectedRow != nil {
 				ti.SetValue(selectedRow[0][4])
@@ -160,6 +161,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, nil
 					}
 
+					// Convert the Group value from string to []string
+					groupValue := strings.Split(m.inputs[4].Value(), ",")
+
 					// Check if we are editing an existing device
 					if m.selectedRow != nil {
 						// Get the selected device
@@ -173,7 +177,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 									Description: m.inputs[1].Value(),
 									MacAddress:  m.inputs[2].Value(),
 									IPAddress:   m.inputs[3].Value(),
-									Group:       m.inputs[4].Value(),
+									Group:       groupValue,
 									State:       "Offline",
 								}
 								break
@@ -186,7 +190,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							Description: m.inputs[1].Value(),
 							MacAddress:  m.inputs[2].Value(),
 							IPAddress:   m.inputs[3].Value(),
-							Group:       m.inputs[4].Value(),
+							Group:       groupValue,
 							State:       "Offline",
 						})
 
