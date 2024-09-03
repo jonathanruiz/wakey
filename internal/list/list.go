@@ -136,7 +136,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selected := m.table.SelectedRow()
 
 			// Return popup message for confirmation
-			return popup.NewPopupMsg("Are you sure you want to delete "+selected[0]+" ("+selected[2]+")?", m, m.table), nil
+			return popup.NewPopupMsg("Are you sure you want to delete "+selected[0]+" ("+selected[2]+")?", m, m.table, deleteDevice), nil
 
 		// Refresh the table
 		case key.Matches(msg, m.keys.Refresh):
@@ -226,4 +226,16 @@ func (m Model) View() string {
 	s += m.help.View(m.keys)
 
 	return s
+}
+
+func deleteDevice(selectedRow []string) error {
+	currentConfig := config.ReadConfig()
+	for i, device := range currentConfig.Devices {
+		if device.DeviceName == selectedRow[0] {
+			currentConfig.Devices = append(currentConfig.Devices[:i], currentConfig.Devices[i+1:]...)
+			config.WriteConfig(currentConfig)
+			return nil
+		}
+	}
+	return fmt.Errorf("device [%s] not found", selectedRow[0])
 }

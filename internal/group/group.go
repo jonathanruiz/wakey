@@ -1,9 +1,11 @@
 package group
 
 import (
+	"fmt"
 	"strings"
 	"wakey/internal/config"
 	"wakey/internal/newGroup"
+	"wakey/internal/popup"
 	"wakey/internal/status"
 	"wakey/internal/style"
 
@@ -102,7 +104,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		case key.Matches(msg, m.keys.Delete):
 			// Delete the selected group
-			break
+			selected := m.table.SelectedRow()
+
+			// Return popup message for confirmation
+			return popup.NewPopupMsg("Are you sure you want to delete "+selected[0]+"?", m, m.table, deleteGroup), nil
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
 		case key.Matches(msg, m.keys.Quit):
@@ -146,4 +151,16 @@ func (m Model) View() string {
 	// Help text
 	s += m.help.View(m.keys)
 	return s
+}
+
+func deleteGroup(selectedRow []string) error {
+	currentConfig := config.ReadConfig()
+	for i, group := range currentConfig.Groups {
+		if group.GroupName == selectedRow[0] {
+			currentConfig.Groups = append(currentConfig.Groups[:i], currentConfig.Groups[i+1:]...)
+			config.WriteConfig(currentConfig)
+			return nil
+		}
+	}
+	return fmt.Errorf("group [%s] not found", selectedRow[0])
 }

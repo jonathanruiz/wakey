@@ -202,6 +202,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						// Create a new config with the updated devices
 						m.currentConfig = config.Config{
 							Devices: updatedDevices,
+							Groups:  m.currentConfig.Groups,
 						}
 					}
 
