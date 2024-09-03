@@ -113,7 +113,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) View() string {
 	s := "\n"
-	s += m.table.View()
+	s += m.table.View() + "\n"
 
 	// Status message
 	var statusMessage string
