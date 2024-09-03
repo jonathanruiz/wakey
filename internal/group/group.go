@@ -1,6 +1,7 @@
 package group
 
 import (
+	"strings"
 	"wakey/internal/config"
 	"wakey/internal/newGroup"
 	"wakey/internal/status"
@@ -115,7 +116,22 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
+	// Get updated config file
+	newConfig := config.ReadConfig()
+
+	var rows []table.Row
+	for _, group := range newConfig.Groups {
+		deviceValue := strings.Join(group.Devices, ", ")
+		rows = append(rows, table.Row{group.GroupName, deviceValue})
+	}
+
+	// Update the table with the new rows
+	m.table.SetRows(rows)
+
+	// The header
 	s := "\n"
+
+	// Render the table
 	s += m.table.View() + "\n"
 
 	// Status message
