@@ -13,6 +13,7 @@ type keyMap struct {
 	Delete key.Binding
 	Help   key.Binding
 	Quit   key.Binding
+
 }
 
 // ShortHelp returns keybindings to be shown in the mini help view. It's part
@@ -56,6 +57,7 @@ var keys = keyMap{
 	Delete: key.NewBinding(
 		key.WithKeys("d"),
 		key.WithHelp("d", "delete group"),
+
 	),
 	Help: key.NewBinding(
 		key.WithKeys("?", "ctrl+h"),
