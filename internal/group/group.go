@@ -2,9 +2,11 @@ package group
 
 import (
 	"wakey/internal/config"
+	"wakey/internal/status"
 	"wakey/internal/style"
 
 	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -87,8 +89,19 @@ func InitialModel() tea.Model {
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "q":
+		switch {
+		case key.Matches(msg, m.keys.Create):
+			// Create a new group
+			break
+		case key.Matches(msg, m.keys.Edit):
+			// Edit the selected group
+			break
+		case key.Matches(msg, m.keys.Delete):
+			// Delete the selected group
+			break
+		case key.Matches(msg, m.keys.Help):
+			m.help.ShowAll = !m.help.ShowAll
+		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
 		}
 	}
@@ -99,5 +112,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	return m.table.View()
+	s := "\n"
+	s += m.table.View()
+
+	// Status message
+	var statusMessage string
+	if status.Message != nil {
+		statusMessage = status.Message.Error()
+	} else {
+		statusMessage = "No status"
+	}
+	s += style.StatusStyle.Render("Status: "+style.StatusMessageStyle.Render(statusMessage)) + "\n"
+
+	// Help text
+	s += m.help.View(m.keys)
+	return s
 }

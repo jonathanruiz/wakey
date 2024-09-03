@@ -5,15 +5,14 @@ import "github.com/charmbracelet/bubbles/key"
 // keyMap defines a set of keybindings. To work for help it must satisfy
 // key.Map. It could also very easily be a map[string]key.Binding.
 type keyMap struct {
-	Up      key.Binding
-	Down    key.Binding
-	Enter   key.Binding
-	Create  key.Binding
-	Edit    key.Binding
-	Delete  key.Binding
-	Refresh key.Binding
-	Help    key.Binding
-	Quit    key.Binding
+	Up     key.Binding
+	Down   key.Binding
+	Enter  key.Binding
+	Create key.Binding
+	Edit   key.Binding
+	Delete key.Binding
+	Help   key.Binding
+	Quit   key.Binding
 }
 
 // ShortHelp returns keybindings to be shown in the mini help view. It's part
@@ -26,9 +25,9 @@ func (k keyMap) ShortHelp() []key.Binding {
 // key.Map interface.
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down}, // first column
-		{k.Enter, k.Create, k.Edit, k.Delete, k.Refresh}, // second column
-		{k.Help, k.Quit}, // third column
+		{k.Up, k.Down},                        // first column
+		{k.Enter, k.Create, k.Edit, k.Delete}, // second column
+		{k.Help, k.Quit},                      // third column
 	}
 }
 
@@ -48,19 +47,15 @@ var keys = keyMap{
 	),
 	Create: key.NewBinding(
 		key.WithKeys("c"),
-		key.WithHelp("c", "create device"),
+		key.WithHelp("c", "create group"),
 	),
 	Edit: key.NewBinding(
 		key.WithKeys("e"),
-		key.WithHelp("e", "edit device"),
+		key.WithHelp("e", "edit group"),
 	),
 	Delete: key.NewBinding(
 		key.WithKeys("d"),
-		key.WithHelp("d", "delete device"),
-	),
-	Refresh: key.NewBinding(
-		key.WithKeys("r"),
-		key.WithHelp("r", "refresh"),
+		key.WithHelp("d", "delete group"),
 	),
 	Help: key.NewBinding(
 		key.WithKeys("?", "ctrl+h"),
