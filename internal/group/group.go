@@ -1,6 +1,9 @@
 package group
 
 import (
+	"wakey/internal/config"
+	"wakey/internal/style"
+
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
@@ -8,7 +11,7 @@ import (
 
 // Model for the Group component
 type Model struct {
-	groups []string // list of groups
+	groups []config.Group // list of groups
 	keys   keyMap
 	help   help.Model
 	table  table.Model
@@ -18,14 +21,29 @@ type Model struct {
 func (m Model) Init() tea.Cmd { return nil }
 
 // InitialModel function for the Group model
-func InitialModel(previousModel tea.Model) tea.Model {
+func InitialModel() tea.Model {
+	// Get groups with updated state
+	groups := config.GetUpdateState().Groups
+
 	// Define table columns
 	columns := []table.Column{
-		{Title: "Group", Width: 20},
+		{Title: "Group Name", Width: 20},
+		{Title: "Devices", Width: 30},
 	}
 
 	// Define table rows
-	rows := make([]table.Row, 0)
+	rows := make([]table.Row, len(groups))
+	for i, device := range groups {
+		devicesInGroup := ""
+		for _, device := range device.Devices {
+			devicesInGroup += device + ", "
+		}
+
+		rows[i] = table.Row{
+			device.GroupName,
+			devicesInGroup,
+		}
+	}
 
 	// Create the table model
 	t := table.New(
@@ -35,7 +53,27 @@ func InitialModel(previousModel tea.Model) tea.Model {
 		table.WithHeight(10),
 	)
 
+	// Set the custom key bindings
+	t.KeyMap = table.KeyMap{
+		LineUp:   keys.Up,
+		LineDown: keys.Down,
+	}
+
+	// Get the default table styles
+	s := style.DefaultTableStyles()
+
+	// Set the styles
+	t.SetStyles(table.Styles{
+		Header:   s.Header,
+		Selected: s.Selected,
+	})
+
 	return Model{
+		// A list of devices to wake. This could be fetched from a database or config file
+		groups: groups,
+		// A map which indicates which devices are selected. We're using
+		// the  map like a mathematical set. The keys refer to the indexes
+		// of the `devices` slice, above.
 		keys:  keys,
 		help:  help.New(),
 		table: t,
