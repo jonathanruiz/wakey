@@ -18,9 +18,15 @@ type Device struct {
 	State       string `json:"State"`
 }
 
+type Group struct {
+	GroupName string   `json:"GroupName"`
+	Devices   []string `json:"Devices"`
+}
+
 // Config struct for the config file.
 type Config struct {
 	Devices []Device `json:"devices"`
+	Groups  []Group  `json:"groups"`
 }
 
 var (
@@ -46,6 +52,7 @@ func CreateConfig() error {
 		// If it doesn't exist, create it
 		config := Config{
 			Devices: []Device{},
+			Groups:  []Group{},
 		}
 
 		// Marshal the config to JSON
@@ -125,14 +132,16 @@ func WriteConfig(config Config) {
 // Update the State of the devices
 func GetUpdateState() Config {
 	// Get the devices
-	devices := ReadConfig().Devices
+	cfg := ReadConfig()
+	devices := cfg.Devices
+	groups := cfg.Groups
 
 	// Loop through the devices
 	for i, device := range devices {
-
 		// Get the State of the device
 		isOnline := wol.IsOnline(device.IPAddress)
 
+		// Update the State of the device
 		if isOnline {
 			devices[i].State = "Online"
 		} else {
@@ -141,10 +150,10 @@ func GetUpdateState() Config {
 	}
 
 	// Write the updated config file
-	WriteConfig(Config{Devices: devices})
+	WriteConfig(Config{Devices: devices, Groups: groups})
 
 	// Return the config file
-	return Config{Devices: devices}
+	return Config{Devices: devices, Groups: groups}
 }
 
 /*
