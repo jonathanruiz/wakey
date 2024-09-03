@@ -2,7 +2,6 @@ package popup
 
 import (
 	"fmt"
-	"wakey/internal/config"
 	"wakey/internal/status"
 	"wakey/internal/style"
 
@@ -23,16 +22,20 @@ var (
 type PopupMsg struct {
 	message       string
 	previousModel tea.Model
+	deleteFunc    DeletionFunc
 	help          help.Model
 	table         table.Model
 	focusIndex    int
 	keyMap        keyMap
 }
 
-func NewPopupMsg(message string, previousModel tea.Model, table table.Model) PopupMsg {
+type DeletionFunc func(selectedRow []string) error
+
+func NewPopupMsg(message string, previousModel tea.Model, table table.Model, deleteFunc DeletionFunc) PopupMsg {
 	return PopupMsg{
 		message:       message,
 		previousModel: previousModel,
+		deleteFunc:    deleteFunc,
 		table:         table,
 		keyMap:        keys,
 		help:          help.New(),
@@ -41,19 +44,14 @@ func NewPopupMsg(message string, previousModel tea.Model, table table.Model) Pop
 
 func (m PopupMsg) Init() tea.Cmd { return nil }
 
-func (m PopupMsg) handleYes() (tea.Model, tea.Cmd) {
+func (m PopupMsg) handleYes(deleteFunc DeletionFunc) (tea.Model, tea.Cmd) {
 	selected := m.table.SelectedRow()
-	currentConfig := config.ReadConfig()
-
-	for i, device := range currentConfig.Devices {
-		if device.DeviceName == selected[0] {
-			currentConfig.Devices = append(currentConfig.Devices[:i], currentConfig.Devices[i+1:]...)
-			status.Message = fmt.Errorf("device [%s] (%s) removed", selected[0], selected[2])
-			break
-		}
+	err := deleteFunc(selected)
+	if err != nil {
+		status.Message = err
+	} else {
+		status.Message = fmt.Errorf("item [%s] removed", selected[0])
 	}
-
-	config.WriteConfig(currentConfig)
 
 	return m.previousModel, func() tea.Msg {
 		return tea.ClearScreen()
@@ -71,7 +69,7 @@ func (m PopupMsg) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keyMap.Right):
 			m.focusIndex = 1
 		case key.Matches(msg, m.keyMap.Yes), key.Matches(msg, m.keyMap.Enter) && m.focusIndex == 0:
-			return m.handleYes()
+			return m.handleYes(m.deleteFunc)
 		case key.Matches(msg, m.keyMap.No), key.Matches(msg, m.keyMap.Enter) && m.focusIndex == 1:
 			return m.previousModel, nil
 		case key.Matches(msg, m.keyMap.Help):

@@ -1,4 +1,4 @@
-package device
+package newGroup
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ var (
 	blurredButton = fmt.Sprintf("[ %s ]", style.BlurredStyle.Render("Submit")) // The blurred button
 )
 
-// Model is the model for the Device component
+// Model is the model for the Group component
 type Model struct {
 	focusIndex    int
 	inputs        []textinput.Model
@@ -31,11 +31,11 @@ type Model struct {
 	selectedRow   []string
 }
 
-// InitialModel returns the initial model for the Device component
+// InitialModel returns the initial model for the Group component
 func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 	m := Model{
-		err:           make([]error, 5),           // Initialize the slice with length 5
-		inputs:        make([]textinput.Model, 5), // Initialize the slice with length 5
+		err:           make([]error, 2),           // Initialize the slice with length 2
+		inputs:        make([]textinput.Model, 2), // Initialize the slice with length 2
 		currentConfig: config.ReadConfig(),
 		keys:          keys,
 		help:          help.New(),
@@ -57,10 +57,10 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 		ti.CharLimit = 64
 
 		switch i {
-		// Device name
+		// Group name
 		case 0:
-			ti.Prompt = "Device Name   : "
-			ti.Placeholder = "Enter the device name"
+			ti.Prompt = "Group Name   : "
+			ti.Placeholder = "Enter the group name"
 			ti.Focus()
 			ti.PromptStyle = style.FocusedStyle
 			ti.TextStyle = style.FocusedStyle
@@ -68,37 +68,13 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 			if selectedRow != nil {
 				ti.SetValue(selectedRow[0][0])
 			}
-		// Description
+		// Devices
 		case 1:
-			ti.Prompt = "Description   : "
-			ti.Placeholder = "Enter a description for the device"
+			ti.Prompt = "Devices      : "
+			ti.Placeholder = "Device1,Device2"
 
 			if selectedRow != nil {
 				ti.SetValue(selectedRow[0][1])
-			}
-		// MAC address
-		case 2:
-			ti.Prompt = "MAC Address   : "
-			ti.Placeholder = "00:00:00:00:00:00"
-
-			if selectedRow != nil {
-				ti.SetValue(selectedRow[0][2])
-			}
-		// IP address
-		case 3:
-			ti.Prompt = "IP Address    : "
-			ti.Placeholder = "0.0.0.0"
-
-			if selectedRow != nil {
-				ti.SetValue(selectedRow[0][3])
-			}
-		// Groups
-		case 4:
-			ti.Prompt = "Groups        : "
-			ti.Placeholder = "Group1,Group2"
-
-			if selectedRow != nil {
-				ti.SetValue(selectedRow[0][4])
 			}
 		}
 
@@ -109,12 +85,12 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 	return m
 }
 
-// Update function for the Device model
+// Update function for the Group model
 func (m Model) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-// Update function for the Device model
+// Update function for the Group model
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
@@ -134,75 +110,67 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if key.Matches(msg, m.keys.Enter) && m.focusIndex == len(m.inputs) {
 
 				// Run the validators
-				m.err[0] = m.deviceNameValidator(m.inputs[0].Value())
-				m.err[1] = m.descriptionValidator(m.inputs[1].Value())
-				m.err[2] = m.macAddressValidator(m.inputs[2].Value())
-				m.err[3] = m.ipAddressValidator(m.inputs[3].Value())
+				// m.err[0] = m.deviceNameValidator(m.inputs[0].Value())
+				// m.err[1] = m.descriptionValidator(m.inputs[1].Value())
+				// m.err[2] = m.macAddressValidator(m.inputs[2].Value())
+				// m.err[3] = m.ipAddressValidator(m.inputs[3].Value())
 
 				if m.focusIndex == len(m.inputs) {
 					// Handle form submission
 					// Reset focus index or update state as needed
 					m.focusIndex = 0
 
-					// Validate the device name
-					if !m.validateInput(0, m.deviceNameValidator) {
-						return m, nil
-					}
+					// // Validate the device name
+					// if !m.validateInput(0, m.deviceNameValidator) {
+					// 	return m, nil
+					// }
 
-					if !m.validateInput(1, m.descriptionValidator) {
-						return m, nil
-					}
+					// if !m.validateInput(1, m.descriptionValidator) {
+					// 	return m, nil
+					// }
 
-					if !m.validateInput(2, m.macAddressValidator) {
-						return m, nil
-					}
+					// if !m.validateInput(2, m.macAddressValidator) {
+					// 	return m, nil
+					// }
 
-					if !m.validateInput(3, m.ipAddressValidator) {
-						return m, nil
-					}
+					// if !m.validateInput(3, m.ipAddressValidator) {
+					// 	return m, nil
+					// }
 
 					// Convert the Group value from string to []string
-					groupValue := strings.Split(m.inputs[4].Value(), ",")
+					deviceValue := strings.Split(m.inputs[1].Value(), ",")
 
 					// Remove any leading or trailing spaces
-					for i, group := range groupValue {
-						groupValue[i] = strings.TrimSpace(group)
+					for i, group := range deviceValue {
+						deviceValue[i] = strings.TrimSpace(group)
 					}
 
-					// Check if we are editing an existing device
+					// Check if we are editing an existing group
 					if m.selectedRow != nil {
-						// Get the selected device
+						// Get the selected group
 						selected := m.selectedRow
 
-						// Update the device in the config
-						for i, device := range m.currentConfig.Devices {
-							if device.DeviceName == selected[0] {
-								m.currentConfig.Devices[i] = config.Device{
-									DeviceName:  m.inputs[0].Value(),
-									Description: m.inputs[1].Value(),
-									MacAddress:  m.inputs[2].Value(),
-									IPAddress:   m.inputs[3].Value(),
-									Group:       groupValue,
-									State:       "Offline",
+						// Update the group in the config
+						for i, group := range m.currentConfig.Groups {
+							if group.GroupName == selected[0] {
+								m.currentConfig.Groups[i] = config.Group{
+									GroupName: m.inputs[0].Value(),
+									Devices:   deviceValue,
 								}
 								break
 							}
 						}
 					} else {
-						// Append the device to the config
-						updatedDevices := append(m.currentConfig.Devices, config.Device{
-							DeviceName:  m.inputs[0].Value(),
-							Description: m.inputs[1].Value(),
-							MacAddress:  m.inputs[2].Value(),
-							IPAddress:   m.inputs[3].Value(),
-							Group:       groupValue,
-							State:       "Offline",
+						// Append the group to the config
+						updatedGroups := append(m.currentConfig.Groups, config.Group{
+							GroupName: m.inputs[0].Value(),
+							Devices:   deviceValue,
 						})
 
-						// Create a new config with the updated devices
+						// Create a new config with the updated group
 						m.currentConfig = config.Config{
-							Devices: updatedDevices,
-							Groups:  m.currentConfig.Groups,
+							Devices: m.currentConfig.Devices,
+							Groups:  updatedGroups,
 						}
 					}
 
@@ -210,7 +178,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					config.WriteConfig(m.currentConfig)
 
 					// Set the status message
-					status.Message = fmt.Errorf("device [%s] (%s) added", m.inputs[0].Value(), m.inputs[2].Value())
+					status.Message = fmt.Errorf("group [%s] added", m.inputs[0].Value())
 
 					// Return to the list and clear the screen
 					return m.previousModel, func() tea.Msg {
@@ -259,12 +227,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-// Define the DeleteDevicePopup function
-func DeleteDevicePopup(deviceName, macAddress string, m tea.Model) (tea.Model, tea.Cmd) {
+// Define the DeleteGroupPopup function
+func DeleteGroupPopup(groupName, macAddress string, m tea.Model) (tea.Model, tea.Cmd) {
 	// Create a popup message for confirmation
 	popupMessage := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("205")).
-		Render("Are you sure you want to delete " + deviceName + " (" + macAddress + ")?")
+		Render("Are you sure you want to delete " + groupName + "?")
 
 	// Return the popup message and a command to handle user input
 	return m, func() tea.Msg {
@@ -272,7 +240,7 @@ func DeleteDevicePopup(deviceName, macAddress string, m tea.Model) (tea.Model, t
 	}
 }
 
-// updateInputs updates all the text inputs in the Device model.
+// updateInputs updates all the text inputs in the Group model.
 func (m *Model) updateInputs(msg tea.Msg) tea.Cmd {
 	cmds := make([]tea.Cmd, len(m.inputs))
 
@@ -290,10 +258,10 @@ func (m *Model) updateInputs(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-// View function for the Device model
+// View function for the Group model
 func (m Model) View() string {
 	// The header
-	s := style.FocusedStyle.Render("\nNew Device") + "\n\n"
+	s := style.FocusedStyle.Render("\nNew Group") + "\n\n"
 
 	// Render the inputs
 	for i, input := range m.inputs {

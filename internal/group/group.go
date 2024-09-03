@@ -1,27 +1,34 @@
 package group
 
 import (
+	"fmt"
+	"strings"
 	"wakey/internal/config"
+	"wakey/internal/newGroup"
+	"wakey/internal/popup"
+	"wakey/internal/status"
 	"wakey/internal/style"
 
 	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 // Model for the Group component
 type Model struct {
-	groups []config.Group // list of groups
-	keys   keyMap
-	help   help.Model
-	table  table.Model
+	groups        []config.Group // list of groups
+	previousModel tea.Model
+	keys          keyMap
+	help          help.Model
+	table         table.Model
 }
 
 // Init function for the Device model
 func (m Model) Init() tea.Cmd { return nil }
 
 // InitialModel function for the Group model
-func InitialModel() tea.Model {
+func InitialModel(previousModel tea.Model) tea.Model {
 	// Get groups with updated state
 	groups := config.GetUpdateState().Groups
 
@@ -78,26 +85,110 @@ func InitialModel() tea.Model {
 		// A map which indicates which devices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
 		// of the `devices` slice, above.
-		keys:  keys,
-		help:  help.New(),
-		table: t,
+		previousModel: previousModel,
+		keys:          keys,
+		help:          help.New(),
+		table:         t,
 	}
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "q":
-			return m, tea.Quit
+	var cmds []tea.Cmd
+
+	// Get new number of rows
+	rows := make([]table.Row, len(config.ReadConfig().Groups))
+
+	// Update the table with the new rows
+	m.table.SetRows(rows)
+
+	// Define table rows
+	for i, group := range config.ReadConfig().Groups {
+		deviceValue := strings.Join(group.Devices, ", ")
+		m.table.Rows()[i] = table.Row{
+			group.GroupName,
+			deviceValue,
 		}
 	}
 
-	var cmd tea.Cmd
-	m.table, cmd = m.table.Update(msg)
-	return m, cmd
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch {
+		case key.Matches(msg, m.keys.Create):
+			// Create a new group
+			return newGroup.InitialModel(m), nil
+		case key.Matches(msg, m.keys.Edit):
+			// Edit the selected group
+			selected := m.table.SelectedRow()
+
+			return newGroup.InitialModel(m, selected), nil
+		case key.Matches(msg, m.keys.Delete):
+			// Delete the selected group
+			selected := m.table.SelectedRow()
+
+			// Return popup message for confirmation
+			return popup.NewPopupMsg("Are you sure you want to delete "+selected[0]+"?", m, m.table, deleteGroup), nil
+		case key.Matches(msg, m.keys.Help):
+			m.help.ShowAll = !m.help.ShowAll
+		case key.Matches(msg, m.keys.Quit):
+			return m.previousModel, tea.ClearScreen
+		}
+	}
+
+	newTable, cmd := m.table.Update(msg)
+	m.table = newTable
+	cmds = append(cmds, cmd)
+
+	return m, tea.Batch(cmds...)
 }
 
 func (m Model) View() string {
-	return m.table.View()
+	const maxRows = 10 // Define the maximum number of rows to display
+
+	// Get updated config file
+	newConfig := config.ReadConfig()
+
+	var rows []table.Row
+	for _, group := range newConfig.Groups {
+		deviceValue := strings.Join(group.Devices, ", ")
+		rows = append(rows, table.Row{group.GroupName, deviceValue})
+	}
+
+	// Truncate rows if they exceed the maximum number
+	if len(rows) > maxRows {
+		rows = rows[:maxRows]
+	}
+
+	// Update the table with the new rows
+	m.table.SetRows(rows)
+
+	// The header
+	s := "\n"
+
+	// Render the table
+	s += m.table.View() + "\n"
+
+	// Status message
+	var statusMessage string
+	if status.Message != nil {
+		statusMessage = status.Message.Error()
+	} else {
+		statusMessage = "No status"
+	}
+	s += style.StatusStyle.Render("Status: "+style.StatusMessageStyle.Render(statusMessage)) + "\n"
+
+	// Help text
+	s += m.help.View(m.keys)
+	return s
+}
+
+func deleteGroup(selectedRow []string) error {
+	currentConfig := config.ReadConfig()
+	for i, group := range currentConfig.Groups {
+		if group.GroupName == selectedRow[0] {
+			currentConfig.Groups = append(currentConfig.Groups[:i], currentConfig.Groups[i+1:]...)
+			config.WriteConfig(currentConfig)
+			return nil
+		}
+	}
+	return fmt.Errorf("group [%s] not found", selectedRow[0])
 }
