@@ -8,6 +8,7 @@ import (
 	"wakey/internal/popup"
 	"wakey/internal/status"
 	"wakey/internal/style"
+	"wakey/internal/wol"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -129,6 +130,29 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			// Return popup message for confirmation
 			return popup.NewPopupMsg("Are you sure you want to delete "+selected[1]+"?", m, m.table, deleteGroup), nil
+
+		case key.Matches(msg, m.keys.Enter):
+			// Extract the selected group and get the device IDs
+			selected := m.table.SelectedRow()
+			deviceIDs := selected[2]
+
+			// Split the device IDs into an array
+			deviceIDsArr := strings.Split(deviceIDs, ", ")
+
+			// Create a map of device IDs to MAC addresses
+			deviceMap := createDeviceMacAddressMap(config.ReadConfig().Devices)
+
+			// Get the MAC addresses for the device IDs
+			macAddresses := getMacAddresses(deviceIDsArr, deviceMap)
+
+			// Wake the group using the MAC addresses
+			err := wol.WakeGroup(macAddresses)
+			if err != nil {
+				status.Message = err
+			} else {
+				status.Message = fmt.Errorf("waking [%s] group", selected[1])
+			}
+
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
 		case key.Matches(msg, m.keys.Quit):
@@ -144,22 +168,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
+	// Refactored code from lines 171 to 195
 	const maxRows = 10 // Define the maximum number of rows to display
 
 	// Get updated config file
 	newConfig := config.ReadConfig()
 
 	// Create a map of device IDs to device names
-	devices := make(map[string]string)
-	for _, device := range newConfig.Devices {
-		devices[device.ID] = device.DeviceName
-	}
+	deviceNameMap := createDeviceNameMap(newConfig.Devices)
 
 	var rows []table.Row
 	for _, group := range newConfig.Groups {
 		var deviceNames []string
 		for _, deviceID := range group.Devices {
-			if deviceName, ok := devices[deviceID]; ok {
+			if deviceName, ok := deviceNameMap[deviceID]; ok {
 				deviceNames = append(deviceNames, deviceName)
 			} else {
 				deviceNames = append(deviceNames, deviceID) // Fallback to device ID if name not found
@@ -196,6 +218,40 @@ func (m Model) View() string {
 	// Help text
 	s += m.help.View(m.keys)
 	return s
+}
+
+// createDeviceAttributeMap creates a map of device IDs to a specified attribute
+func createDeviceAttributeMap(devices []config.Device, attributeFunc func(config.Device) string) map[string]string {
+	deviceMap := make(map[string]string)
+	for _, device := range devices {
+		deviceMap[device.ID] = attributeFunc(device)
+	}
+	return deviceMap
+}
+
+// createDeviceNameMap creates a map of device IDs to device names
+func createDeviceNameMap(devices []config.Device) map[string]string {
+	return createDeviceAttributeMap(devices, func(d config.Device) string {
+		return d.DeviceName
+	})
+}
+
+// createDeviceMacAddressMap creates a map of device IDs to MAC addresses
+func createDeviceMacAddressMap(devices []config.Device) map[string]string {
+	return createDeviceAttributeMap(devices, func(d config.Device) string {
+		return d.MacAddress
+	})
+}
+
+// getMacAddresses returns the MAC addresses for the given device IDs
+func getMacAddresses(deviceIDs []string, deviceMap map[string]string) []string {
+	var macAddresses []string
+	for _, deviceID := range deviceIDs {
+		if macAddress, ok := deviceMap[deviceID]; ok {
+			macAddresses = append(macAddresses, macAddress)
+		}
+	}
+	return macAddresses
 }
 
 func deleteGroup(selectedRow []string) error {

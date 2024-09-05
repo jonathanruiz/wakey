@@ -161,10 +161,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selected := m.table.SelectedRow()
 
 			// Wake the device
-			wol.WakeDevice(selected[2])
+			wol.WakeDevice(selected[3])
 
 			// Write the status message
-			status.Message = fmt.Errorf("waking up [%s] (%s)", selected[0], selected[2])
+			status.Message = fmt.Errorf("waking up [%s] (%s)", selected[1], selected[3])
 
 		// These keys should exit the program.
 		case key.Matches(msg, m.keys.Quit):
