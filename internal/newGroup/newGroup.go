@@ -12,6 +12,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/google/uuid"
 )
 
 var (
@@ -66,7 +67,7 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 			ti.TextStyle = style.FocusedStyle
 
 			if selectedRow != nil {
-				ti.SetValue(selectedRow[0][0])
+				ti.SetValue(selectedRow[0][1])
 			}
 		// Devices
 		case 1:
@@ -74,7 +75,7 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 			ti.Placeholder = "Device1,Device2"
 
 			if selectedRow != nil {
-				ti.SetValue(selectedRow[0][1])
+				ti.SetValue(selectedRow[0][2])
 			}
 		}
 
@@ -109,33 +110,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Check if the user pressed enter with the submit button focused
 			if key.Matches(msg, m.keys.Enter) && m.focusIndex == len(m.inputs) {
 
-				// Run the validators
-				// m.err[0] = m.deviceNameValidator(m.inputs[0].Value())
-				// m.err[1] = m.descriptionValidator(m.inputs[1].Value())
-				// m.err[2] = m.macAddressValidator(m.inputs[2].Value())
-				// m.err[3] = m.ipAddressValidator(m.inputs[3].Value())
-
 				if m.focusIndex == len(m.inputs) {
 					// Handle form submission
 					// Reset focus index or update state as needed
 					m.focusIndex = 0
-
-					// // Validate the device name
-					// if !m.validateInput(0, m.deviceNameValidator) {
-					// 	return m, nil
-					// }
-
-					// if !m.validateInput(1, m.descriptionValidator) {
-					// 	return m, nil
-					// }
-
-					// if !m.validateInput(2, m.macAddressValidator) {
-					// 	return m, nil
-					// }
-
-					// if !m.validateInput(3, m.ipAddressValidator) {
-					// 	return m, nil
-					// }
 
 					// Convert the Group value from string to []string
 					deviceValue := strings.Split(m.inputs[1].Value(), ",")
@@ -152,8 +130,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 						// Update the group in the config
 						for i, group := range m.currentConfig.Groups {
-							if group.GroupName == selected[0] {
+							if group.ID == selected[0] {
 								m.currentConfig.Groups[i] = config.Group{
+									ID:        group.ID,
 									GroupName: m.inputs[0].Value(),
 									Devices:   deviceValue,
 								}
@@ -163,6 +142,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						// Append the group to the config
 						updatedGroups := append(m.currentConfig.Groups, config.Group{
+							ID:        uuid.NewString(),
 							GroupName: m.inputs[0].Value(),
 							Devices:   deviceValue,
 						})

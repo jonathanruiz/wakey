@@ -12,6 +12,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/google/uuid"
 )
 
 var (
@@ -66,7 +67,7 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 			ti.TextStyle = style.FocusedStyle
 
 			if selectedRow != nil {
-				ti.SetValue(selectedRow[0][0])
+				ti.SetValue(selectedRow[0][1])
 			}
 		// Description
 		case 1:
@@ -74,7 +75,7 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 			ti.Placeholder = "Enter a description for the device"
 
 			if selectedRow != nil {
-				ti.SetValue(selectedRow[0][1])
+				ti.SetValue(selectedRow[0][2])
 			}
 		// MAC address
 		case 2:
@@ -82,7 +83,7 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 			ti.Placeholder = "00:00:00:00:00:00"
 
 			if selectedRow != nil {
-				ti.SetValue(selectedRow[0][2])
+				ti.SetValue(selectedRow[0][3])
 			}
 		// IP address
 		case 3:
@@ -90,7 +91,7 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 			ti.Placeholder = "0.0.0.0"
 
 			if selectedRow != nil {
-				ti.SetValue(selectedRow[0][3])
+				ti.SetValue(selectedRow[0][4])
 			}
 		// Groups
 		case 4:
@@ -98,7 +99,7 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 			ti.Placeholder = "Group1,Group2"
 
 			if selectedRow != nil {
-				ti.SetValue(selectedRow[0][4])
+				ti.SetValue(selectedRow[0][5])
 			}
 		}
 
@@ -178,6 +179,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						for i, device := range m.currentConfig.Devices {
 							if device.DeviceName == selected[0] {
 								m.currentConfig.Devices[i] = config.Device{
+									ID:          m.currentConfig.Devices[i].ID,
 									DeviceName:  m.inputs[0].Value(),
 									Description: m.inputs[1].Value(),
 									MacAddress:  m.inputs[2].Value(),
@@ -191,6 +193,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						// Append the device to the config
 						updatedDevices := append(m.currentConfig.Devices, config.Device{
+							ID:          uuid.NewString(),
 							DeviceName:  m.inputs[0].Value(),
 							Description: m.inputs[1].Value(),
 							MacAddress:  m.inputs[2].Value(),

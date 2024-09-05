@@ -33,8 +33,9 @@ func InitialModel() tea.Model {
 
 	// Define table columns
 	columns := []table.Column{
+		{Title: "ID", Width: 0},
 		{Title: "Device", Width: 20},
-		{Title: "Description", Width: 30},
+		{Title: "Description", Width: 20},
 		{Title: "MAC Address", Width: 20},
 		{Title: "IP Address", Width: 15},
 		{Title: "Group", Width: 15},
@@ -46,6 +47,7 @@ func InitialModel() tea.Model {
 	for i, device := range devices {
 		groupValue := strings.Join(device.Group, ", ")
 		rows[i] = table.Row{
+			device.ID,
 			device.DeviceName,
 			device.Description,
 			device.MacAddress,
@@ -107,6 +109,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	for i, device := range config.ReadConfig().Devices {
 		groupValue := strings.Join(device.Group, ", ")
 		m.table.Rows()[i] = table.Row{
+			device.ID,
 			device.DeviceName,
 			device.Description,
 			device.MacAddress,
@@ -136,7 +139,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selected := m.table.SelectedRow()
 
 			// Return popup message for confirmation
-			return popup.NewPopupMsg("Are you sure you want to delete "+selected[0]+" ("+selected[2]+")?", m, m.table, deleteDevice), nil
+			return popup.NewPopupMsg("Are you sure you want to delete "+selected[1]+" ("+selected[3]+")?", m, m.table, deleteDevice), nil
 
 		// Refresh the table
 		case key.Matches(msg, m.keys.Refresh):
@@ -158,10 +161,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selected := m.table.SelectedRow()
 
 			// Wake the device
-			wol.WakeDevice(selected[2])
+			wol.WakeDevice(selected[3])
 
 			// Write the status message
-			status.Message = fmt.Errorf("waking up [%s] (%s)", selected[0], selected[2])
+			status.Message = fmt.Errorf("waking up [%s] (%s)", selected[1], selected[3])
 
 		// These keys should exit the program.
 		case key.Matches(msg, m.keys.Quit):
@@ -179,22 +182,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View function for the Device model
 func (m Model) View() string {
-
 	const maxRows = 10 // Define the maximum number of rows to display
 
 	// Get updated config file
 	newConfig := config.ReadConfig()
 
-	// Convert m.devices from []string to []table.Row
-	var rows []table.Row
-	for _, device := range newConfig.Devices {
-		groupValue := strings.Join(device.Group, ", ")
+	// Create a map of group IDs to group names
+	groupNameMap := createGroupNameMap(newConfig.Groups)
 
-		// Append the device to the rows
-		// This will make sure to output all the data for the device
-		// The order of the columns must match the order of the columns in the table
-		rows = append(rows, table.Row{device.DeviceName, device.Description, device.MacAddress, device.IPAddress, groupValue, device.State})
-	}
+	// Convert devices to table rows
+	rows := convertDevicesToRows(newConfig.Devices, groupNameMap)
 
 	// Truncate rows if they exceed the maximum number
 	if len(rows) > maxRows {
@@ -228,14 +225,48 @@ func (m Model) View() string {
 	return s
 }
 
+// createGroupNameMap creates a map of group IDs to group names
+func createGroupNameMap(groups []config.Group) map[string]string {
+	groupNameMap := make(map[string]string)
+	for _, group := range groups {
+		groupNameMap[group.ID] = group.GroupName
+	}
+	return groupNameMap
+}
+
+// convertDevicesToRows converts a slice of devices to a slice of table rows
+func convertDevicesToRows(devices []config.Device, groupNameMap map[string]string) []table.Row {
+	var rows []table.Row
+	for _, device := range devices {
+		groupNamesStr := getGroupNamesString(device.Group, groupNameMap)
+		rows = append(rows, table.Row{
+			device.ID, device.DeviceName, device.Description, device.MacAddress, device.IPAddress, groupNamesStr, device.State,
+		})
+	}
+	return rows
+}
+
+// getGroupNamesString returns a comma-separated string of group names for the given group IDs
+func getGroupNamesString(groupIDs []string, groupNameMap map[string]string) string {
+	var groupNames []string
+	for _, groupID := range groupIDs {
+		if groupName, ok := groupNameMap[groupID]; ok {
+			groupNames = append(groupNames, groupName)
+		} else {
+			groupNames = append(groupNames, groupID) // Fallback to group ID if name not found
+		}
+	}
+	return strings.Join(groupNames, ", ")
+}
+
 func deleteDevice(selectedRow []string) error {
 	currentConfig := config.ReadConfig()
 	for i, device := range currentConfig.Devices {
-		if device.DeviceName == selectedRow[0] {
+		if device.ID == selectedRow[0] {
 			currentConfig.Devices = append(currentConfig.Devices[:i], currentConfig.Devices[i+1:]...)
 			config.WriteConfig(currentConfig)
 			return nil
 		}
 	}
-	return fmt.Errorf("device [%s] not found", selectedRow[0])
+	return fmt.Errorf("device [%s] not found", selectedRow[1])
 }

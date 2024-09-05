@@ -13,7 +13,6 @@ type keyMap struct {
 	Delete key.Binding
 	Help   key.Binding
 	Quit   key.Binding
-
 }
 
 // ShortHelp returns keybindings to be shown in the mini help view. It's part
@@ -44,7 +43,7 @@ var keys = keyMap{
 	),
 	Enter: key.NewBinding(
 		key.WithKeys("enter"),
-		key.WithHelp("enter", "wake"),
+		key.WithHelp("enter", "wake group"),
 	),
 	Create: key.NewBinding(
 		key.WithKeys("c"),
@@ -57,7 +56,6 @@ var keys = keyMap{
 	Delete: key.NewBinding(
 		key.WithKeys("d"),
 		key.WithHelp("d", "delete group"),
-
 	),
 	Help: key.NewBinding(
 		key.WithKeys("?", "ctrl+h"),

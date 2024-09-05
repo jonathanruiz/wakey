@@ -108,6 +108,17 @@ func WakeDevice(mac string) error {
 	return nil
 }
 
+// WakeGroup sends a Wake-on-LAN packet to each MAC address in the list.
+func WakeGroup(macAddresses []string) error {
+	for _, mac := range macAddresses {
+		err := WakeDevice(mac)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func checkOS() string {
 	return runtime.GOOS
 }
