@@ -12,6 +12,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/google/uuid"
 )
 
 var (
@@ -178,6 +179,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						for i, device := range m.currentConfig.Devices {
 							if device.DeviceName == selected[0] {
 								m.currentConfig.Devices[i] = config.Device{
+									ID:          m.currentConfig.Devices[i].ID,
 									DeviceName:  m.inputs[0].Value(),
 									Description: m.inputs[1].Value(),
 									MacAddress:  m.inputs[2].Value(),
@@ -191,6 +193,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						// Append the device to the config
 						updatedDevices := append(m.currentConfig.Devices, config.Device{
+							ID:          uuid.NewString(),
 							DeviceName:  m.inputs[0].Value(),
 							Description: m.inputs[1].Value(),
 							MacAddress:  m.inputs[2].Value(),

@@ -10,6 +10,7 @@ import (
 
 // Config struct for the config file.
 type Device struct {
+	ID          string   `json:"ID"`
 	DeviceName  string   `json:"DeviceName"`
 	Description string   `json:"Description"`
 	MacAddress  string   `json:"MacAddress"`
@@ -20,7 +21,7 @@ type Device struct {
 
 type Group struct {
 	GroupName string   `json:"GroupName"`
-	Devices   []string `json:"Devices"`
+	Devices   []string `json:"Devices"` // contains IDs of devices
 }
 
 // Config struct for the config file.
