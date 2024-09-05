@@ -43,6 +43,13 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 		previousModel: previousModel,
 	}
 
+	existingGroups := m.currentConfig.Groups
+
+	var groupNames []string
+	for _, group := range existingGroups {
+		groupNames = append(groupNames, group.GroupName)
+	}
+
 	// Check if this is an edit operation
 	if len(selectedRow) > 0 {
 		m.selectedRow = selectedRow[0]
@@ -97,6 +104,8 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 		case 4:
 			ti.Prompt = "Groups        : "
 			ti.Placeholder = "Group1,Group2"
+			ti.ShowSuggestions = true
+			ti.SetSuggestions(groupNames)
 
 			if selectedRow != nil {
 				ti.SetValue(selectedRow[0][5])
@@ -162,12 +171,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, nil
 					}
 
+					// Load existing groups
+					existingGroups := createGroupIDMap(m.currentConfig.Groups)
+
 					// Convert the Group value from string to []string
 					groupValue := strings.Split(m.inputs[4].Value(), ",")
 
 					// Remove any leading or trailing spaces
 					for i, group := range groupValue {
 						groupValue[i] = strings.TrimSpace(group)
+					}
+
+					// Replace group names with group IDs
+					groupIDs := []string{}
+					for _, groupName := range groupValue {
+						if groupID, exists := existingGroups[groupName]; exists {
+							groupIDs = append(groupIDs, groupID)
+						} else {
+							// Handle the case where the group name does not exist
+							// For example, you can create a new group or return an error
+							fmt.Println(groupName, groupID, exists)
+							return m, nil
+						}
 					}
 
 					// Check if we are editing an existing device
@@ -184,7 +209,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 									Description: m.inputs[1].Value(),
 									MacAddress:  m.inputs[2].Value(),
 									IPAddress:   m.inputs[3].Value(),
-									Group:       groupValue,
+									Group:       groupIDs,
 									State:       "Offline",
 								}
 								break
@@ -198,7 +223,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							Description: m.inputs[1].Value(),
 							MacAddress:  m.inputs[2].Value(),
 							IPAddress:   m.inputs[3].Value(),
-							Group:       groupValue,
+							Group:       groupIDs,
 							State:       "Offline",
 						})
 
@@ -323,4 +348,13 @@ func (m Model) View() string {
 
 	return s
 
+}
+
+// CreateGroupNameMap creates a map of group IDs to group names
+func createGroupIDMap(groups []config.Group) map[string]string {
+	groupNameMap := make(map[string]string)
+	for _, group := range groups {
+		groupNameMap[group.GroupName] = group.ID
+	}
+	return groupNameMap
 }
