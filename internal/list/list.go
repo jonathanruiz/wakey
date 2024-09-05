@@ -182,36 +182,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View function for the Device model
 func (m Model) View() string {
-
 	const maxRows = 10 // Define the maximum number of rows to display
 
 	// Get updated config file
 	newConfig := config.ReadConfig()
 
 	// Create a map of group IDs to group names
-	groups := make(map[string]string)
-	for _, group := range newConfig.Groups {
-		groups[group.ID] = group.GroupName
-	}
+	groupNameMap := createGroupNameMap(newConfig.Groups)
 
-	// Convert m.devices from []string to []table.Row
-	var rows []table.Row
-	for _, device := range newConfig.Devices {
-		var groupNames []string
-		for _, groupID := range device.Group {
-			if groupName, ok := groups[groupID]; ok {
-				groupNames = append(groupNames, groupName)
-			} else {
-				groupNames = append(groupNames, groupID) // Fallback to group ID if name not found
-			}
-		}
-		groupNamesStr := strings.Join(groupNames, ", ")
-
-		// Append the device to the rows
-		// This will make sure to output all the data for the device
-		// The order of the columns must match the order of the columns in the table
-		rows = append(rows, table.Row{device.ID, device.DeviceName, device.Description, device.MacAddress, device.IPAddress, groupNamesStr, device.State})
-	}
+	// Convert devices to table rows
+	rows := convertDevicesToRows(newConfig.Devices, groupNameMap)
 
 	// Truncate rows if they exceed the maximum number
 	if len(rows) > maxRows {
@@ -243,6 +223,40 @@ func (m Model) View() string {
 	s += m.help.View(m.keys)
 
 	return s
+}
+
+// createGroupNameMap creates a map of group IDs to group names
+func createGroupNameMap(groups []config.Group) map[string]string {
+	groupNameMap := make(map[string]string)
+	for _, group := range groups {
+		groupNameMap[group.ID] = group.GroupName
+	}
+	return groupNameMap
+}
+
+// convertDevicesToRows converts a slice of devices to a slice of table rows
+func convertDevicesToRows(devices []config.Device, groupNameMap map[string]string) []table.Row {
+	var rows []table.Row
+	for _, device := range devices {
+		groupNamesStr := getGroupNamesString(device.Group, groupNameMap)
+		rows = append(rows, table.Row{
+			device.ID, device.DeviceName, device.Description, device.MacAddress, device.IPAddress, groupNamesStr, device.State,
+		})
+	}
+	return rows
+}
+
+// getGroupNamesString returns a comma-separated string of group names for the given group IDs
+func getGroupNamesString(groupIDs []string, groupNameMap map[string]string) string {
+	var groupNames []string
+	for _, groupID := range groupIDs {
+		if groupName, ok := groupNameMap[groupID]; ok {
+			groupNames = append(groupNames, groupName)
+		} else {
+			groupNames = append(groupNames, groupID) // Fallback to group ID if name not found
+		}
+	}
+	return strings.Join(groupNames, ", ")
 }
 
 func deleteDevice(selectedRow []string) error {
