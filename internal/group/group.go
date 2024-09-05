@@ -128,7 +128,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selected := m.table.SelectedRow()
 
 			// Return popup message for confirmation
-			return popup.NewPopupMsg("Are you sure you want to delete "+selected[0]+"?", m, m.table, deleteGroup), nil
+			return popup.NewPopupMsg("Are you sure you want to delete "+selected[1]+"?", m, m.table, deleteGroup), nil
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
 		case key.Matches(msg, m.keys.Quit):
@@ -186,11 +186,11 @@ func (m Model) View() string {
 func deleteGroup(selectedRow []string) error {
 	currentConfig := config.ReadConfig()
 	for i, group := range currentConfig.Groups {
-		if group.GroupName == selectedRow[0] {
+		if group.ID == selectedRow[0] {
 			currentConfig.Groups = append(currentConfig.Groups[:i], currentConfig.Groups[i+1:]...)
 			config.WriteConfig(currentConfig)
 			return nil
 		}
 	}
-	return fmt.Errorf("group [%s] not found", selectedRow[0])
+	return fmt.Errorf("group [%s] not found", selectedRow[1])
 }
