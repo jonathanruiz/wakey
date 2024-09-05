@@ -149,10 +149,25 @@ func (m Model) View() string {
 	// Get updated config file
 	newConfig := config.ReadConfig()
 
+	// Create a map of device IDs to device names
+	devices := make(map[string]string)
+	for _, device := range newConfig.Devices {
+		devices[device.ID] = device.DeviceName
+	}
+
 	var rows []table.Row
 	for _, group := range newConfig.Groups {
-		deviceValue := strings.Join(group.Devices, ", ")
-		rows = append(rows, table.Row{group.ID, group.GroupName, deviceValue})
+		var deviceNames []string
+		for _, deviceID := range group.Devices {
+			if deviceName, ok := devices[deviceID]; ok {
+				deviceNames = append(deviceNames, deviceName)
+			} else {
+				deviceNames = append(deviceNames, deviceID) // Fallback to device ID if name not found
+			}
+		}
+		deviceNamesStr := strings.Join(deviceNames, ", ")
+
+		rows = append(rows, table.Row{group.ID, group.GroupName, deviceNamesStr})
 	}
 
 	// Truncate rows if they exceed the maximum number
