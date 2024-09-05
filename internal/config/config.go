@@ -20,6 +20,7 @@ type Device struct {
 }
 
 type Group struct {
+	ID        string   `json:"ID"`
 	GroupName string   `json:"GroupName"`
 	Devices   []string `json:"Devices"` // contains IDs of devices
 }

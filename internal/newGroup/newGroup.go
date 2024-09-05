@@ -12,6 +12,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/google/uuid"
 )
 
 var (
@@ -154,6 +155,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						for i, group := range m.currentConfig.Groups {
 							if group.GroupName == selected[0] {
 								m.currentConfig.Groups[i] = config.Group{
+									ID:        group.ID,
 									GroupName: m.inputs[0].Value(),
 									Devices:   deviceValue,
 								}
@@ -163,6 +165,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						// Append the group to the config
 						updatedGroups := append(m.currentConfig.Groups, config.Group{
+							ID:        uuid.NewString(),
 							GroupName: m.inputs[0].Value(),
 							Devices:   deviceValue,
 						})
