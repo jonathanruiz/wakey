@@ -67,7 +67,7 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 			ti.TextStyle = style.FocusedStyle
 
 			if selectedRow != nil {
-				ti.SetValue(selectedRow[0][0])
+				ti.SetValue(selectedRow[0][1])
 			}
 		// Devices
 		case 1:
@@ -75,7 +75,7 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 			ti.Placeholder = "Device1,Device2"
 
 			if selectedRow != nil {
-				ti.SetValue(selectedRow[0][1])
+				ti.SetValue(selectedRow[0][2])
 			}
 		}
 

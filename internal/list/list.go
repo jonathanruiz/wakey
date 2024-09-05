@@ -33,8 +33,9 @@ func InitialModel() tea.Model {
 
 	// Define table columns
 	columns := []table.Column{
+		{Title: "ID", Width: 10},
 		{Title: "Device", Width: 20},
-		{Title: "Description", Width: 30},
+		{Title: "Description", Width: 20},
 		{Title: "MAC Address", Width: 20},
 		{Title: "IP Address", Width: 15},
 		{Title: "Group", Width: 15},
@@ -46,6 +47,7 @@ func InitialModel() tea.Model {
 	for i, device := range devices {
 		groupValue := strings.Join(device.Group, ", ")
 		rows[i] = table.Row{
+			device.ID,
 			device.DeviceName,
 			device.Description,
 			device.MacAddress,
@@ -107,6 +109,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	for i, device := range config.ReadConfig().Devices {
 		groupValue := strings.Join(device.Group, ", ")
 		m.table.Rows()[i] = table.Row{
+			device.ID,
 			device.DeviceName,
 			device.Description,
 			device.MacAddress,
@@ -193,7 +196,7 @@ func (m Model) View() string {
 		// Append the device to the rows
 		// This will make sure to output all the data for the device
 		// The order of the columns must match the order of the columns in the table
-		rows = append(rows, table.Row{device.DeviceName, device.Description, device.MacAddress, device.IPAddress, groupValue, device.State})
+		rows = append(rows, table.Row{device.ID, device.DeviceName, device.Description, device.MacAddress, device.IPAddress, groupValue, device.State})
 	}
 
 	// Truncate rows if they exceed the maximum number

@@ -34,6 +34,7 @@ func InitialModel(previousModel tea.Model) tea.Model {
 
 	// Define table columns
 	columns := []table.Column{
+		{Title: "ID", Width: 10},
 		{Title: "Group Name", Width: 20},
 		{Title: "Devices", Width: 30},
 	}
@@ -105,6 +106,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	for i, group := range config.ReadConfig().Groups {
 		deviceValue := strings.Join(group.Devices, ", ")
 		m.table.Rows()[i] = table.Row{
+			group.ID,
 			group.GroupName,
 			deviceValue,
 		}
@@ -150,7 +152,7 @@ func (m Model) View() string {
 	var rows []table.Row
 	for _, group := range newConfig.Groups {
 		deviceValue := strings.Join(group.Devices, ", ")
-		rows = append(rows, table.Row{group.GroupName, deviceValue})
+		rows = append(rows, table.Row{group.ID, group.GroupName, deviceValue})
 	}
 
 	// Truncate rows if they exceed the maximum number
