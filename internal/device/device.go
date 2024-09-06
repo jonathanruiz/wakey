@@ -43,9 +43,39 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 		previousModel: previousModel,
 	}
 
+	// Load existing groups
+	existingGroups := m.currentConfig.Groups
+
+	var groupNames []string
+	for _, group := range existingGroups {
+		groupNames = append(groupNames, group.GroupName)
+	}
+
 	// Check if this is an edit operation
 	if len(selectedRow) > 0 {
+		// Set the selected row
 		m.selectedRow = selectedRow[0]
+
+		// Load the existing groups
+		groupIDs := strings.Split(selectedRow[0][5], ",")
+
+		// Create a map of group IDs to group names
+		groupNames := CreateGroupNameMap(existingGroups)
+
+		// Create a slice of group names
+		groups := []string{}
+
+		// Loop through the group IDs and append the group names to the groups slice
+		for _, groupID := range groupIDs {
+			// Remove any leading or trailing spaces
+			groupID = strings.TrimSpace(groupID)
+
+			// Append the group name to the groups slice
+			groups = append(groups, groupNames[groupID])
+		}
+
+		// Set the groups value to the group names
+		selectedRow[0][5] = strings.Join(groups, ",")
 	}
 
 	// Create a new text input model for each input field
@@ -96,10 +126,17 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 		// Groups
 		case 4:
 			ti.Prompt = "Groups        : "
-			ti.Placeholder = "Group1,Group2"
+			ti.Placeholder = "Group1, Group2"
+			ti.ShowSuggestions = true
+			ti.SetSuggestions(groupNames)
 
 			if selectedRow != nil {
-				ti.SetValue(selectedRow[0][5])
+
+				// Split the groups string into a slice
+				groups := strings.Split(selectedRow[0][5], ",")
+
+				// Convert the group names into a string
+				ti.SetValue(strings.Join(groups, ", "))
 			}
 		}
 
@@ -162,12 +199,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, nil
 					}
 
+					// Load existing groups
+					existingGroups := createGroupIDMap(m.currentConfig.Groups)
+
 					// Convert the Group value from string to []string
 					groupValue := strings.Split(m.inputs[4].Value(), ",")
 
 					// Remove any leading or trailing spaces
 					for i, group := range groupValue {
 						groupValue[i] = strings.TrimSpace(group)
+					}
+
+					// Replace group names with group IDs
+					groupIDs := []string{}
+					for _, groupName := range groupValue {
+						if groupID, exists := existingGroups[groupName]; exists {
+							groupIDs = append(groupIDs, groupID)
+						} else {
+							// Handle the case where the group name does not exist
+							// For example, you can create a new group or return an error
+							fmt.Println(groupName, groupID, exists)
+							return m, nil
+						}
 					}
 
 					// Check if we are editing an existing device
@@ -177,14 +230,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 						// Update the device in the config
 						for i, device := range m.currentConfig.Devices {
-							if device.DeviceName == selected[0] {
+							if device.ID == selected[0] {
 								m.currentConfig.Devices[i] = config.Device{
 									ID:          m.currentConfig.Devices[i].ID,
 									DeviceName:  m.inputs[0].Value(),
 									Description: m.inputs[1].Value(),
 									MacAddress:  m.inputs[2].Value(),
 									IPAddress:   m.inputs[3].Value(),
-									Group:       groupValue,
+									Group:       groupIDs,
 									State:       "Offline",
 								}
 								break
@@ -198,7 +251,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							Description: m.inputs[1].Value(),
 							MacAddress:  m.inputs[2].Value(),
 							IPAddress:   m.inputs[3].Value(),
-							Group:       groupValue,
+							Group:       groupIDs,
 							State:       "Offline",
 						})
 
@@ -323,4 +376,22 @@ func (m Model) View() string {
 
 	return s
 
+}
+
+// CreateGroupNameMap creates a map of group names to group IDs
+func CreateGroupNameMap(groups []config.Group) map[string]string {
+	groupNameMap := make(map[string]string)
+	for _, group := range groups {
+		groupNameMap[group.ID] = group.GroupName
+	}
+	return groupNameMap
+}
+
+// createGroupIDMap creates a map of group IDs to group names
+func createGroupIDMap(groups []config.Group) map[string]string {
+	groupNameMap := make(map[string]string)
+	for _, group := range groups {
+		groupNameMap[group.GroupName] = group.ID
+	}
+	return groupNameMap
 }
