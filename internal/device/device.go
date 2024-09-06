@@ -52,7 +52,25 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 
 	// Check if this is an edit operation
 	if len(selectedRow) > 0 {
+		// Set the selected row
 		m.selectedRow = selectedRow[0]
+
+		// Load the existing groups
+		groupIDs := strings.Split(selectedRow[0][5], ",")
+
+		// Create a map of group IDs to group names
+		groupNames := CreateGroupNameMap(existingGroups)
+
+		// Create a slice of group names
+		groups := []string{}
+
+		// Loop through the group IDs and append the group names to the groups slice
+		for _, groupID := range groupIDs {
+			groups = append(groups, groupNames[groupID])
+		}
+
+		// Set the groups value to the group names
+		selectedRow[0][5] = strings.Join(groups, ",")
 	}
 
 	// Create a new text input model for each input field
