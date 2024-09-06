@@ -188,7 +188,7 @@ func (m Model) View() string {
 	newConfig := config.ReadConfig()
 
 	// Create a map of group IDs to group names
-	groupNameMap := createGroupNameMap(newConfig.Groups)
+	groupNameMap := device.CreateGroupNameMap(newConfig.Groups)
 
 	// Convert devices to table rows
 	rows := convertDevicesToRows(newConfig.Devices, groupNameMap)
@@ -223,15 +223,6 @@ func (m Model) View() string {
 	s += m.help.View(m.keys)
 
 	return s
-}
-
-// createGroupNameMap creates a map of group IDs to group names
-func createGroupNameMap(groups []config.Group) map[string]string {
-	groupNameMap := make(map[string]string)
-	for _, group := range groups {
-		groupNameMap[group.ID] = group.GroupName
-	}
-	return groupNameMap
 }
 
 // convertDevicesToRows converts a slice of devices to a slice of table rows

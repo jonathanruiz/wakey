@@ -202,7 +202,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 						// Update the device in the config
 						for i, device := range m.currentConfig.Devices {
-							if device.DeviceName == selected[0] {
+							if device.ID == selected[0] {
 								m.currentConfig.Devices[i] = config.Device{
 									ID:          m.currentConfig.Devices[i].ID,
 									DeviceName:  m.inputs[0].Value(),
@@ -351,6 +351,15 @@ func (m Model) View() string {
 }
 
 // CreateGroupNameMap creates a map of group IDs to group names
+func CreateGroupNameMap(groups []config.Group) map[string]string {
+	groupNameMap := make(map[string]string)
+	for _, group := range groups {
+		groupNameMap[group.ID] = group.GroupName
+	}
+	return groupNameMap
+}
+
+// createGroupNameMap creates a map of group IDs to group names
 func createGroupIDMap(groups []config.Group) map[string]string {
 	groupNameMap := make(map[string]string)
 	for _, group := range groups {
