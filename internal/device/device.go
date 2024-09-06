@@ -126,7 +126,7 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 		// Groups
 		case 4:
 			ti.Prompt = "Groups        : "
-			ti.Placeholder = "Group1,Group2"
+			ti.Placeholder = "Group1, Group2"
 			ti.ShowSuggestions = true
 			ti.SetSuggestions(groupNames)
 
