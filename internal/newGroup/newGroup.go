@@ -51,12 +51,19 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 	if len(selectedRow) > 0 {
 		m.selectedRow = selectedRow[0]
 
-		// Load the existing devices
+		// Get the device names
 		deviceIDs := strings.Split(selectedRow[0][2], ",")
+
+		// Remove any leading or trailing spaces
+		for i, group := range deviceIDs {
+			deviceIDs[i] = strings.TrimSpace(group)
+		}
+
+		// Convert the device IDs to device names
 		deviceNames = convertDeviceIDsToNames(deviceIDs, m.deviceNameMap)
 
-		// Set the device names to the text input
-		selectedRow[0][2] = strings.Join(deviceNames, ", ")
+		// Set the device names in the input field
+		selectedRow[0][2] = strings.Join(deviceNames, ",")
 	}
 
 	// Create a new text input model for each input field
