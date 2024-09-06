@@ -43,6 +43,7 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 		previousModel: previousModel,
 	}
 
+	// Load existing groups
 	existingGroups := m.currentConfig.Groups
 
 	var groupNames []string
@@ -66,6 +67,10 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 
 		// Loop through the group IDs and append the group names to the groups slice
 		for _, groupID := range groupIDs {
+			// Remove any leading or trailing spaces
+			groupID = strings.TrimSpace(groupID)
+
+			// Append the group name to the groups slice
 			groups = append(groups, groupNames[groupID])
 		}
 
@@ -126,7 +131,12 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 			ti.SetSuggestions(groupNames)
 
 			if selectedRow != nil {
-				ti.SetValue(selectedRow[0][5])
+
+				// Split the groups string into a slice
+				groups := strings.Split(selectedRow[0][5], ",")
+
+				// Convert the group names into a string
+				ti.SetValue(strings.Join(groups, ", "))
 			}
 		}
 
@@ -368,7 +378,7 @@ func (m Model) View() string {
 
 }
 
-// CreateGroupNameMap creates a map of group IDs to group names
+// CreateGroupNameMap creates a map of group names to group IDs
 func CreateGroupNameMap(groups []config.Group) map[string]string {
 	groupNameMap := make(map[string]string)
 	for _, group := range groups {
@@ -377,7 +387,7 @@ func CreateGroupNameMap(groups []config.Group) map[string]string {
 	return groupNameMap
 }
 
-// createGroupNameMap creates a map of group IDs to group names
+// createGroupIDMap creates a map of group IDs to group names
 func createGroupIDMap(groups []config.Group) map[string]string {
 	groupNameMap := make(map[string]string)
 	for _, group := range groups {
