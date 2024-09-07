@@ -35,8 +35,8 @@ var keys = keyMap{
 		key.WithHelp("↑/shift+tab", "move up"),
 	),
 	Down: key.NewBinding(
-		key.WithKeys("down", "ctrl+tab"),
-		key.WithHelp("↓/ctrl+tab", "move down"),
+		key.WithKeys("down"),
+		key.WithHelp("↓", "move down"),
 	),
 	Enter: key.NewBinding(
 		key.WithKeys("enter"),

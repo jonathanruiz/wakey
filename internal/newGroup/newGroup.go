@@ -30,6 +30,7 @@ type Model struct {
 	keys          keyMap
 	help          help.Model
 	selectedRow   []string
+	deviceNameMap map[string]string // Add this line
 }
 
 // InitialModel returns the initial model for the Group component
@@ -41,11 +42,28 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 		keys:          keys,
 		help:          help.New(),
 		previousModel: previousModel,
+		deviceNameMap: createDeviceNameMap(config.ReadConfig().Devices), // Initialize the deviceNameMap
 	}
+
+	var deviceNames []string
 
 	// Check if this is an edit operation
 	if len(selectedRow) > 0 {
 		m.selectedRow = selectedRow[0]
+
+		// Get the device names
+		deviceIDs := strings.Split(selectedRow[0][2], ",")
+
+		// Remove any leading or trailing spaces
+		for i, group := range deviceIDs {
+			deviceIDs[i] = strings.TrimSpace(group)
+		}
+
+		// Convert the device IDs to device names
+		deviceNames = convertDeviceIDsToNames(deviceIDs, m.deviceNameMap)
+
+		// Set the device names in the input field
+		selectedRow[0][2] = strings.Join(deviceNames, ",")
 	}
 
 	// Create a new text input model for each input field
@@ -72,10 +90,14 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 		// Devices
 		case 1:
 			ti.Prompt = "Devices      : "
-			ti.Placeholder = "Device1,Device2"
+			ti.Placeholder = "Device1, Device2"
+			ti.ShowSuggestions = true
+			ti.SetSuggestions(deviceNames)
 
 			if selectedRow != nil {
-				ti.SetValue(selectedRow[0][2])
+				devices := strings.Split(selectedRow[0][2], ",")
+
+				ti.SetValue(strings.Join(devices, ", "))
 			}
 		}
 
@@ -115,6 +137,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					// Reset focus index or update state as needed
 					m.focusIndex = 0
 
+					// Load existing devices
+					existingDevices := createDeviceNameMap(m.currentConfig.Devices)
+
 					// Convert the Group value from string to []string
 					deviceValue := strings.Split(m.inputs[1].Value(), ",")
 
@@ -122,6 +147,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					for i, group := range deviceValue {
 						deviceValue[i] = strings.TrimSpace(group)
 					}
+
+					// Replace the device names with device IDs
+					deviceValue = convertDeviceNamesToIDs(deviceValue, existingDevices)
 
 					// Check if we are editing an existing group
 					if m.selectedRow != nil {
@@ -268,4 +296,38 @@ func (m Model) View() string {
 
 	return s
 
+}
+
+// createDeviceNameMap creates a map of device IDs to device names
+func createDeviceNameMap(devices []config.Device) map[string]string {
+	deviceNameMap := make(map[string]string)
+	for _, device := range devices {
+		deviceNameMap[device.ID] = device.DeviceName
+	}
+	return deviceNameMap
+}
+
+// convertDeviceNamesToIDs converts a slice of device names to a slice of device IDs
+func convertDeviceNamesToIDs(deviceNames []string, deviceNameMap map[string]string) []string {
+	var deviceIDs []string
+	for _, name := range deviceNames {
+		for id, deviceName := range deviceNameMap {
+			if deviceName == name {
+				deviceIDs = append(deviceIDs, id)
+				break
+			}
+		}
+	}
+	return deviceIDs
+}
+
+// convertDeviceIDsToNames converts a slice of device IDs to a slice of device names
+func convertDeviceIDsToNames(deviceIDs []string, deviceNameMap map[string]string) []string {
+	var deviceNames []string
+	for _, id := range deviceIDs {
+		if name, ok := deviceNameMap[id]; ok {
+			deviceNames = append(deviceNames, name)
+		}
+	}
+	return deviceNames
 }
