@@ -30,6 +30,7 @@ type Model struct {
 	keys          keyMap
 	help          help.Model
 	selectedRow   []string
+	groupNameMap  map[string]string
 }
 
 // InitialModel returns the initial model for the Device component
@@ -41,6 +42,7 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 		keys:          keys,
 		help:          help.New(),
 		previousModel: previousModel,
+		groupNameMap:  createGroupIDMap(config.ReadConfig().Groups),
 	}
 
 	// Load existing groups
@@ -196,6 +198,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 
 					if !m.validateInput(3, m.ipAddressValidator) {
+						return m, nil
+					}
+
+					if !m.validateInput(4, m.groupValidator) {
 						return m, nil
 					}
 
