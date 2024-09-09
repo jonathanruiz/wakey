@@ -30,7 +30,8 @@ type Model struct {
 	keys          keyMap
 	help          help.Model
 	selectedRow   []string
-	deviceNameMap map[string]string // Add this line
+	deviceNameMap map[string]string
+	deviceIDMap   map[string]string
 }
 
 // InitialModel returns the initial model for the Group component
@@ -43,6 +44,7 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 		help:          help.New(),
 		previousModel: previousModel,
 		deviceNameMap: createDeviceNameMap(config.ReadConfig().Devices), // Initialize the deviceNameMap
+		deviceIDMap:   createDeviceIDMap(config.ReadConfig().Devices),   // Initialize the deviceIDMap
 	}
 
 	var deviceNames []string
@@ -60,7 +62,7 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 		}
 
 		// Convert the device IDs to device names
-		deviceNames = convertDeviceIDsToNames(deviceIDs, m.deviceNameMap)
+		deviceNames = convertDeviceIDsToNames(deviceIDs, m.deviceIDMap)
 
 		// Set the device names in the input field
 		selectedRow[0][2] = strings.Join(deviceNames, ",")
@@ -132,13 +134,27 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Check if the user pressed enter with the submit button focused
 			if key.Matches(msg, m.keys.Enter) && m.focusIndex == len(m.inputs) {
 
+				// Run the validators
+				m.err[0] = m.groupNameValidator(m.inputs[0].Value())
+				m.err[1] = m.devicesValidator(m.inputs[1].Value())
+
 				if m.focusIndex == len(m.inputs) {
 					// Handle form submission
 					// Reset focus index or update state as needed
 					m.focusIndex = 0
 
+					// Validate the group name
+					if !m.validateInput(0, m.groupNameValidator) {
+						return m, nil
+					}
+
+					// Validate the devices
+					if !m.validateInput(1, m.devicesValidator) {
+						return m, nil
+					}
+
 					// Load existing devices
-					existingDevices := createDeviceNameMap(m.currentConfig.Devices)
+					existingDevices := createDeviceIDMap(m.currentConfig.Devices)
 
 					// Convert the Group value from string to []string
 					deviceValue := strings.Split(m.inputs[1].Value(), ",")
@@ -302,9 +318,17 @@ func (m Model) View() string {
 func createDeviceNameMap(devices []config.Device) map[string]string {
 	deviceNameMap := make(map[string]string)
 	for _, device := range devices {
-		deviceNameMap[device.ID] = device.DeviceName
+		deviceNameMap[device.DeviceName] = device.ID
 	}
 	return deviceNameMap
+}
+
+func createDeviceIDMap(devices []config.Device) map[string]string {
+	deviceIDMap := make(map[string]string)
+	for _, device := range devices {
+		deviceIDMap[device.ID] = device.DeviceName
+	}
+	return deviceIDMap
 }
 
 // convertDeviceNamesToIDs converts a slice of device names to a slice of device IDs
