@@ -49,8 +49,10 @@ func InitialModel(previousModel tea.Model) tea.Model {
 			devicesInGroup += device + ", "
 		}
 
-		// Remove the trailing comma and space
-		devicesInGroup = devicesInGroup[:len(devicesInGroup)-2]
+		// Remove the trailing comma and space if devicesInGroup is not empty
+		if len(devicesInGroup) > 0 {
+			devicesInGroup = devicesInGroup[:len(devicesInGroup)-2]
+		}
 
 		rows[i] = table.Row{
 			group.GroupName,
