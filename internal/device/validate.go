@@ -61,12 +61,13 @@ func (m *Model) ipAddressValidator(value string) error {
 }
 
 func (m *Model) groupValidator(value string) error {
+	if value == "" {
+		m.err[4] = nil
+		return nil
+	}
 
-	// Split the value string into an array
-	groupNames := strings.Split(value, ", ")
-
-	// Check if each group exists
-	for _, groupName := range groupNames {
+	// Check if the value is a valid group name
+	for _, groupName := range strings.Split(value, ", ") {
 		if _, ok := m.groupNameMap[groupName]; !ok {
 			return fmt.Errorf("'%s' group does not exist", groupName)
 		}

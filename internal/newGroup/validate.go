@@ -16,11 +16,13 @@ func (m *Model) groupNameValidator(value string) error {
 }
 
 func (m *Model) devicesValidator(value string) error {
-	// Split the value string into an array
-	deviceNames := strings.Split(value, ", ")
+	if value == "" {
+		m.err[1] = nil
+		return nil
+	}
 
-	// Check if each group exists
-	for _, deviceName := range deviceNames {
+	// Check if the value is a valid device name
+	for _, deviceName := range strings.Split(value, ", ") {
 		if _, ok := m.deviceNameMap[deviceName]; !ok {
 			return fmt.Errorf("'%s' device does not exist", deviceName)
 		}
