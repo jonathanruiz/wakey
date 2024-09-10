@@ -216,16 +216,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						groupValue[i] = strings.TrimSpace(group)
 					}
 
-					// Replace group names with group IDs
+					// Replace group names with group IDs if there are any groups
 					groupIDs := []string{}
-					for _, groupName := range groupValue {
-						if groupID, exists := existingGroups[groupName]; exists {
-							groupIDs = append(groupIDs, groupID)
-						} else {
-							// Handle the case where the group name does not exist
-							// For example, you can create a new group or return an error
-							fmt.Println(groupName, groupID, exists)
-							return m, nil
+					if len(groupValue) > 0 && groupValue[0] != "" {
+						for _, groupName := range groupValue {
+							if groupID, exists := existingGroups[groupName]; exists {
+								groupIDs = append(groupIDs, groupID)
+							} else {
+								// Handle the case where the group name does not exist
+								// For example, you can create a new group or return an error
+								return m, nil
+							}
 						}
 					}
 
