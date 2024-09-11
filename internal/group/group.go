@@ -164,7 +164,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.previousModel, tea.ClearScreen
 
 		case key.Matches(msg, m.keys.Quit):
-			return m.previousModel, tea.ClearScreen
+			return m, tea.Quit
 		}
 	}
 
