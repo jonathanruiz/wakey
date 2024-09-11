@@ -63,8 +63,8 @@ var keys = keyMap{
 		key.WithHelp("enter", "select"),
 	),
 	Help: key.NewBinding(
-		key.WithKeys("?", "ctrl+h"),
-		key.WithHelp("?/ctrl+h", "toggle help"),
+		key.WithKeys("ctrl+h"),
+		key.WithHelp("ctrl+h", "toggle help"),
 	),
 	Quit: key.NewBinding(
 		key.WithKeys("q", "esc", "ctrl+c"),
