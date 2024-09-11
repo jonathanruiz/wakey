@@ -3,12 +3,12 @@ module wakey
 go 1.23.0
 
 require (
+	github.com/charmbracelet/bubbles v0.19.0
 	github.com/charmbracelet/bubbletea v0.27.0
 	github.com/charmbracelet/lipgloss v0.12.1
 	github.com/google/uuid v1.6.0
 	github.com/prometheus-community/pro-bing v0.4.1
 	golang.org/x/term v0.23.0
-	github.com/charmbracelet/bubbles v0.19.0
 )
 
 require (

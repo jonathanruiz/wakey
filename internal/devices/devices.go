@@ -15,6 +15,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // Model for the Device component
@@ -190,6 +191,12 @@ func (m Model) View() string {
 
 	// The header
 	s := "\n"
+
+	// Render the buttons
+	buttons := lipgloss.JoinHorizontal(lipgloss.Top, style.FocusedTab.Render("Devices"), style.BlurredTab.Render("Groups")) + "\n"
+
+	// Place the buttons to the center
+	s = lipgloss.PlaceHorizontal(style.TermWidth, lipgloss.Center, buttons) + "\n"
 
 	// Render the table
 	s += m.table.View() + "\n"
