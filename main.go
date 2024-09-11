@@ -6,7 +6,7 @@ import (
 
 	"wakey/internal/config"
 	"wakey/internal/devices"
-	"wakey/internal/status"
+	"wakey/internal/helper/status"
 
 	tea "github.com/charmbracelet/bubbletea"
 )

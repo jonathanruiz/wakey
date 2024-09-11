@@ -3,8 +3,8 @@ package device
 import (
 	"fmt"
 	"wakey/internal/config"
-	"wakey/internal/status"
-	"wakey/internal/style"
+	"wakey/internal/helper/status"
+	"wakey/internal/helper/style"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
