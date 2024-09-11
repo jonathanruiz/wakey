@@ -2,7 +2,6 @@ package device
 
 import (
 	"fmt"
-	"strings"
 	"wakey/internal/config"
 	"wakey/internal/status"
 	"wakey/internal/style"
@@ -30,54 +29,23 @@ type Model struct {
 	keys          keyMap
 	help          help.Model
 	selectedRow   []string
-	groupNameMap  map[string]string
 }
 
 // InitialModel returns the initial model for the Device component
 func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 	m := Model{
-		err:           make([]error, 5),           // Initialize the slice with length 5
-		inputs:        make([]textinput.Model, 5), // Initialize the slice with length 5
+		err:           make([]error, 4),           // Initialize the slice with length 4
+		inputs:        make([]textinput.Model, 4), // Initialize the slice with length 4
 		currentConfig: config.ReadConfig(),
 		keys:          keys,
 		help:          help.New(),
 		previousModel: previousModel,
-		groupNameMap:  createGroupIDMap(config.ReadConfig().Groups),
-	}
-
-	// Load existing groups
-	existingGroups := m.currentConfig.Groups
-
-	var groupNames []string
-	for _, group := range existingGroups {
-		groupNames = append(groupNames, group.GroupName)
 	}
 
 	// Check if this is an edit operation
 	if len(selectedRow) > 0 {
 		// Set the selected row
 		m.selectedRow = selectedRow[0]
-
-		// Load the existing groups
-		groupIDs := strings.Split(selectedRow[0][5], ",")
-
-		// Create a map of group IDs to group names
-		groupNames := CreateGroupNameMap(existingGroups)
-
-		// Create a slice of group names
-		groups := []string{}
-
-		// Loop through the group IDs and append the group names to the groups slice
-		for _, groupID := range groupIDs {
-			// Remove any leading or trailing spaces
-			groupID = strings.TrimSpace(groupID)
-
-			// Append the group name to the groups slice
-			groups = append(groups, groupNames[groupID])
-		}
-
-		// Set the groups value to the group names
-		selectedRow[0][5] = strings.Join(groups, ",")
 	}
 
 	// Create a new text input model for each input field
@@ -124,21 +92,6 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 
 			if selectedRow != nil {
 				ti.SetValue(selectedRow[0][4])
-			}
-		// Groups
-		case 4:
-			ti.Prompt = "Groups        : "
-			ti.Placeholder = "Group1, Group2"
-			ti.ShowSuggestions = true
-			ti.SetSuggestions(groupNames)
-
-			if selectedRow != nil {
-
-				// Split the groups string into a slice
-				groups := strings.Split(selectedRow[0][5], ",")
-
-				// Convert the group names into a string
-				ti.SetValue(strings.Join(groups, ", "))
 			}
 		}
 
@@ -201,35 +154,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, nil
 					}
 
-					if !m.validateInput(4, m.groupValidator) {
-						return m, nil
-					}
-
-					// Load existing groups
-					existingGroups := createGroupIDMap(m.currentConfig.Groups)
-
-					// Convert the Group value from string to []string
-					groupValue := strings.Split(m.inputs[4].Value(), ",")
-
-					// Remove any leading or trailing spaces
-					for i, group := range groupValue {
-						groupValue[i] = strings.TrimSpace(group)
-					}
-
-					// Replace group names with group IDs if there are any groups
-					groupIDs := []string{}
-					if len(groupValue) > 0 && groupValue[0] != "" {
-						for _, groupName := range groupValue {
-							if groupID, exists := existingGroups[groupName]; exists {
-								groupIDs = append(groupIDs, groupID)
-							} else {
-								// Handle the case where the group name does not exist
-								// For example, you can create a new group or return an error
-								return m, nil
-							}
-						}
-					}
-
 					// Check if we are editing an existing device
 					if m.selectedRow != nil {
 						// Get the selected device
@@ -244,7 +168,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 									Description: m.inputs[1].Value(),
 									MacAddress:  m.inputs[2].Value(),
 									IPAddress:   m.inputs[3].Value(),
-									Group:       groupIDs,
 									State:       "Offline",
 								}
 								break
@@ -258,7 +181,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							Description: m.inputs[1].Value(),
 							MacAddress:  m.inputs[2].Value(),
 							IPAddress:   m.inputs[3].Value(),
-							Group:       groupIDs,
 							State:       "Offline",
 						})
 

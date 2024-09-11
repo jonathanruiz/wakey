@@ -10,13 +10,12 @@ import (
 
 // Config struct for the config file.
 type Device struct {
-	ID          string   `json:"ID"`
-	DeviceName  string   `json:"DeviceName"`
-	Description string   `json:"Description"`
-	MacAddress  string   `json:"MacAddress"`
-	IPAddress   string   `json:"IPAddress"`
-	Group       []string `json:"Group"`
-	State       string   `json:"State"`
+	ID          string `json:"ID"`
+	DeviceName  string `json:"DeviceName"`
+	Description string `json:"Description"`
+	MacAddress  string `json:"MacAddress"`
+	IPAddress   string `json:"IPAddress"`
+	State       string `json:"State"`
 }
 
 type Group struct {

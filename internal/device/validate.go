@@ -3,7 +3,6 @@ package device
 import (
 	"fmt"
 	"regexp"
-	"strings"
 )
 
 func (m *Model) deviceNameValidator(value string) error {
@@ -57,23 +56,6 @@ func (m *Model) ipAddressValidator(value string) error {
 	}
 
 	m.err[3] = nil
-	return nil
-}
-
-func (m *Model) groupValidator(value string) error {
-	if value == "" {
-		m.err[4] = nil
-		return nil
-	}
-
-	// Check if the value is a valid group name
-	for _, groupName := range strings.Split(value, ", ") {
-		if _, ok := m.groupNameMap[groupName]; !ok {
-			return fmt.Errorf("'%s' group does not exist", groupName)
-		}
-	}
-
-	m.err[4] = nil
 	return nil
 }
 
