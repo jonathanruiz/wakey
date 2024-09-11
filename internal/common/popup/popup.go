@@ -29,7 +29,7 @@ type PopupMsg struct {
 	keyMap        keyMap
 }
 
-type HandleFunc func(selectedRow []string) (string, error)
+type HandleFunc func(selectedRow []string) (error, error)
 
 func NewPopupMsg(message string, previousModel tea.Model, table table.Model, handleFunc HandleFunc) PopupMsg {
 	return PopupMsg{
@@ -50,7 +50,7 @@ func (m PopupMsg) handleYes(handleFunc HandleFunc) (tea.Model, tea.Cmd) {
 	if err != nil {
 		status.Message = err
 	} else {
-		status.Message = fmt.Errorf(action)
+		status.Message = action
 	}
 
 	return m.previousModel, func() tea.Msg {

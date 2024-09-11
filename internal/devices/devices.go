@@ -223,14 +223,14 @@ func convertDevicesToRows(devices []config.Device) []table.Row {
 	return rows
 }
 
-func deleteDevice(selectedRow []string) (string, error) {
+func deleteDevice(selectedRow []string) (error, error) {
 	currentConfig := config.ReadConfig()
 	for i, device := range currentConfig.Devices {
 		if device.ID == selectedRow[0] {
 			currentConfig.Devices = append(currentConfig.Devices[:i], currentConfig.Devices[i+1:]...)
 			config.WriteConfig(currentConfig)
-			return fmt.Sprintf("device [%s] (%s) deleted", selectedRow[1], selectedRow[3]), nil
+			return fmt.Errorf("device [%s] (%s) deleted", selectedRow[1], selectedRow[3]), nil
 		}
 	}
-	return "", fmt.Errorf("device [%s] not found", selectedRow[1])
+	return nil, fmt.Errorf("device [%s] not found", selectedRow[1])
 }
