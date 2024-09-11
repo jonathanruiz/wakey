@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"wakey/internal/config"
 	"wakey/internal/devices/device"
-	"wakey/internal/groups/group"
+	"wakey/internal/groups"
 	"wakey/internal/popup"
 	"wakey/internal/status"
 	"wakey/internal/style"
@@ -143,7 +143,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, m.keys.View):
 			// Open the group view
-			return group.InitialModel(m), tea.ClearScreen
+			return groups.InitialModel(m), tea.ClearScreen
 
 		// Toggle help
 		case key.Matches(msg, m.keys.Help):
@@ -227,14 +227,14 @@ func convertDevicesToRows(devices []config.Device) []table.Row {
 	return rows
 }
 
-func deleteDevice(selectedRow []string) error {
+func deleteDevice(selectedRow []string) (string, error) {
 	currentConfig := config.ReadConfig()
 	for i, device := range currentConfig.Devices {
 		if device.ID == selectedRow[0] {
 			currentConfig.Devices = append(currentConfig.Devices[:i], currentConfig.Devices[i+1:]...)
 			config.WriteConfig(currentConfig)
-			return nil
+			return fmt.Sprintf("device [%s] (%s) deleted", selectedRow[1], selectedRow[3]), nil
 		}
 	}
-	return fmt.Errorf("device [%s] not found", selectedRow[1])
+	return "", fmt.Errorf("device [%s] not found", selectedRow[1])
 }

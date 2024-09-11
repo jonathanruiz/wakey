@@ -22,20 +22,20 @@ var (
 type PopupMsg struct {
 	message       string
 	previousModel tea.Model
-	deleteFunc    DeletionFunc
+	handleFunc    HandleFunc
 	help          help.Model
 	table         table.Model
 	focusIndex    int
 	keyMap        keyMap
 }
 
-type DeletionFunc func(selectedRow []string) error
+type HandleFunc func(selectedRow []string) (string, error)
 
-func NewPopupMsg(message string, previousModel tea.Model, table table.Model, deleteFunc DeletionFunc) PopupMsg {
+func NewPopupMsg(message string, previousModel tea.Model, table table.Model, handleFunc HandleFunc) PopupMsg {
 	return PopupMsg{
 		message:       message,
 		previousModel: previousModel,
-		deleteFunc:    deleteFunc,
+		handleFunc:    handleFunc,
 		table:         table,
 		keyMap:        keys,
 		help:          help.New(),
@@ -44,13 +44,13 @@ func NewPopupMsg(message string, previousModel tea.Model, table table.Model, del
 
 func (m PopupMsg) Init() tea.Cmd { return nil }
 
-func (m PopupMsg) handleYes(deleteFunc DeletionFunc) (tea.Model, tea.Cmd) {
+func (m PopupMsg) handleYes(handleFunc HandleFunc) (tea.Model, tea.Cmd) {
 	selected := m.table.SelectedRow()
-	err := deleteFunc(selected)
+	action, err := handleFunc(selected)
 	if err != nil {
 		status.Message = err
 	} else {
-		status.Message = fmt.Errorf("item [%s] removed", selected[0])
+		status.Message = fmt.Errorf(action)
 	}
 
 	return m.previousModel, func() tea.Msg {
@@ -69,7 +69,7 @@ func (m PopupMsg) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keyMap.Right):
 			m.focusIndex = 1
 		case key.Matches(msg, m.keyMap.Yes), key.Matches(msg, m.keyMap.Enter) && m.focusIndex == 0:
-			return m.handleYes(m.deleteFunc)
+			return m.handleYes(m.handleFunc)
 		case key.Matches(msg, m.keyMap.No), key.Matches(msg, m.keyMap.Enter) && m.focusIndex == 1:
 			return m.previousModel, nil
 		case key.Matches(msg, m.keyMap.Help):

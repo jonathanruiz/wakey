@@ -262,14 +262,14 @@ func getMacAddresses(deviceIDs []string, deviceMap map[string]string) []string {
 	return macAddresses
 }
 
-func deleteGroup(selectedRow []string) error {
+func deleteGroup(selectedRow []string) (string, error) {
 	currentConfig := config.ReadConfig()
 	for i, group := range currentConfig.Groups {
 		if group.ID == selectedRow[0] {
 			currentConfig.Groups = append(currentConfig.Groups[:i], currentConfig.Groups[i+1:]...)
 			config.WriteConfig(currentConfig)
-			return nil
+			return fmt.Sprintf("group [%s] removed", selectedRow[1]), nil
 		}
 	}
-	return fmt.Errorf("group [%s] not found", selectedRow[1])
+	return "", fmt.Errorf("group [%s] not found", selectedRow[1])
 }
