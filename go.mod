@@ -1,6 +1,6 @@
 module wakey
 
-go 1.22.6
+go 1.23.0
 
 require (
 	github.com/charmbracelet/bubbletea v0.27.0
