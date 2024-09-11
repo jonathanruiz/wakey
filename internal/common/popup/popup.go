@@ -2,8 +2,8 @@ package popup
 
 import (
 	"fmt"
-	"wakey/internal/helper/status"
-	"wakey/internal/helper/style"
+	"wakey/internal/common/status"
+	"wakey/internal/common/style"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"

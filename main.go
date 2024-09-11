@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"wakey/internal"
+	"wakey/internal/common/status"
 	"wakey/internal/config"
-	"wakey/internal/helper/status"
 
 	tea "github.com/charmbracelet/bubbletea"
 )

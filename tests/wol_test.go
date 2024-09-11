@@ -2,7 +2,7 @@ package tests
 
 import (
 	"testing"
-	"wakey/internal/helper/wol"
+	"wakey/internal/common/wol"
 )
 
 func TestIsOnline(t *testing.T) {
