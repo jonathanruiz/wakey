@@ -285,7 +285,11 @@ func (m *Model) updateInputs(msg tea.Msg) tea.Cmd {
 // View function for the Group model
 func (m Model) View() string {
 	// The header
-	s := style.FocusedStyle.Render("\nNew Group") + "\n\n"
+	s := "\n"
+
+	buttons := style.FocusedTab.Render("Groups > New Group")
+
+	s = lipgloss.PlaceHorizontal(style.TermWidth, lipgloss.Center, buttons) + "\n"
 
 	// Render the inputs
 	for i, input := range m.inputs {
