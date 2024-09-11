@@ -1,4 +1,4 @@
-package list
+package devices
 
 import "github.com/charmbracelet/bubbles/key"
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"wakey/internal/wol"
+	"wakey/internal/common/wol"
 )
 
 // Config struct for the config file.

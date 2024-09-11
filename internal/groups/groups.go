@@ -1,14 +1,15 @@
-package group
+package groups
 
 import (
 	"fmt"
 	"strings"
+	"wakey/internal/common"
+	"wakey/internal/common/popup"
+	"wakey/internal/common/status"
+	"wakey/internal/common/style"
+	"wakey/internal/common/wol"
 	"wakey/internal/config"
-	"wakey/internal/newGroup"
-	"wakey/internal/popup"
-	"wakey/internal/status"
-	"wakey/internal/style"
-	"wakey/internal/wol"
+	"wakey/internal/groups/group"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -18,18 +19,17 @@ import (
 
 // Model for the Group component
 type Model struct {
-	groups        []config.Group // list of groups
-	previousModel tea.Model
-	keys          keyMap
-	help          help.Model
-	table         table.Model
+	groups []config.Group // list of groups
+	keys   common.KeyMap
+	help   help.Model
+	table  table.Model
 }
 
 // Init function for the Device model
 func (m Model) Init() tea.Cmd { return nil }
 
 // InitialModel function for the Group model
-func InitialModel(previousModel tea.Model) tea.Model {
+func InitialModel() tea.Model {
 	// Get groups with updated state
 	groups := config.GetUpdateState().Groups
 
@@ -89,10 +89,9 @@ func InitialModel(previousModel tea.Model) tea.Model {
 		// A map which indicates which devices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
 		// of the `devices` slice, above.
-		previousModel: previousModel,
-		keys:          keys,
-		help:          help.New(),
-		table:         t,
+		keys:  common.DefaultKeyMap(),
+		help:  help.New(),
+		table: t,
 	}
 }
 
@@ -120,12 +119,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, m.keys.Create):
 			// Create a new group
-			return newGroup.InitialModel(m), nil
+			return group.InitialModel(m), nil
 		case key.Matches(msg, m.keys.Edit):
 			// Edit the selected group
 			selected := m.table.SelectedRow()
 
-			return newGroup.InitialModel(m, selected), nil
+			return group.InitialModel(m, selected), nil
 
 		case key.Matches(msg, m.keys.Delete):
 			// Delete the selected group
@@ -158,10 +157,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
-
-		case key.Matches(msg, m.keys.View):
-			// Switch to the device view
-			return m.previousModel, tea.ClearScreen
 
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
@@ -262,14 +257,14 @@ func getMacAddresses(deviceIDs []string, deviceMap map[string]string) []string {
 	return macAddresses
 }
 
-func deleteGroup(selectedRow []string) error {
+func deleteGroup(selectedRow []string) (error, error) {
 	currentConfig := config.ReadConfig()
 	for i, group := range currentConfig.Groups {
 		if group.ID == selectedRow[0] {
 			currentConfig.Groups = append(currentConfig.Groups[:i], currentConfig.Groups[i+1:]...)
 			config.WriteConfig(currentConfig)
-			return nil
+			return fmt.Errorf("group [%s] removed", selectedRow[1]), nil
 		}
 	}
-	return fmt.Errorf("group [%s] not found", selectedRow[1])
+	return nil, fmt.Errorf("group [%s] not found", selectedRow[1])
 }

@@ -1,15 +1,15 @@
-package list
+package devices
 
 import (
 	"fmt"
 	"strconv"
+	"wakey/internal/common"
+	"wakey/internal/common/popup"
+	"wakey/internal/common/status"
+	"wakey/internal/common/style"
+	"wakey/internal/common/wol"
 	"wakey/internal/config"
-	"wakey/internal/device"
-	"wakey/internal/group"
-	"wakey/internal/popup"
-	"wakey/internal/status"
-	"wakey/internal/style"
-	"wakey/internal/wol"
+	"wakey/internal/devices/device"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -20,7 +20,7 @@ import (
 // Model for the Device component
 type Model struct {
 	devices []config.Device // list of devices to wake
-	keys    keyMap
+	keys    common.KeyMap
 	help    help.Model
 	table   table.Model
 }
@@ -82,7 +82,7 @@ func InitialModel() tea.Model {
 		// A map which indicates which devices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
 		// of the `devices` slice, above.
-		keys:  keys,
+		keys:  common.DefaultKeyMap(),
 		help:  help.New(),
 		table: t,
 	}
@@ -140,10 +140,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// return InitialModel to refresh the table
 			status.Message = fmt.Errorf("refreshing devices")
 			return InitialModel(), tea.ClearScreen
-
-		case key.Matches(msg, m.keys.View):
-			// Open the group view
-			return group.InitialModel(m), tea.ClearScreen
 
 		// Toggle help
 		case key.Matches(msg, m.keys.Help):
@@ -227,14 +223,14 @@ func convertDevicesToRows(devices []config.Device) []table.Row {
 	return rows
 }
 
-func deleteDevice(selectedRow []string) error {
+func deleteDevice(selectedRow []string) (error, error) {
 	currentConfig := config.ReadConfig()
 	for i, device := range currentConfig.Devices {
 		if device.ID == selectedRow[0] {
 			currentConfig.Devices = append(currentConfig.Devices[:i], currentConfig.Devices[i+1:]...)
 			config.WriteConfig(currentConfig)
-			return nil
+			return fmt.Errorf("device [%s] (%s) deleted", selectedRow[1], selectedRow[3]), nil
 		}
 	}
-	return fmt.Errorf("device [%s] not found", selectedRow[1])
+	return nil, fmt.Errorf("device [%s] not found", selectedRow[1])
 }

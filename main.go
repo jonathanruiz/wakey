@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"wakey/internal"
+	"wakey/internal/common/status"
 	"wakey/internal/config"
-	"wakey/internal/list"
-	"wakey/internal/status"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -14,7 +14,7 @@ import (
 func main() {
 	status.Message = config.CreateConfig()
 	// Create a new program and open the alternate screen
-	p := tea.NewProgram(list.InitialModel(), tea.WithAltScreen())
+	p := tea.NewProgram(internal.InitialModel(), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error: %v", err)
 		os.Exit(1)

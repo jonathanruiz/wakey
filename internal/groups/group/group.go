@@ -1,11 +1,11 @@
-package newGroup
+package group
 
 import (
 	"fmt"
 	"strings"
+	"wakey/internal/common/status"
+	"wakey/internal/common/style"
 	"wakey/internal/config"
-	"wakey/internal/status"
-	"wakey/internal/style"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
