@@ -3,6 +3,7 @@ package groups
 import (
 	"fmt"
 	"strings"
+	"wakey/internal/common"
 	"wakey/internal/config"
 	"wakey/internal/groups/group"
 	"wakey/internal/helper/popup"
@@ -19,7 +20,7 @@ import (
 // Model for the Group component
 type Model struct {
 	groups []config.Group // list of groups
-	keys   keyMap
+	keys   common.KeyMap
 	help   help.Model
 	table  table.Model
 }
@@ -88,7 +89,7 @@ func InitialModel() tea.Model {
 		// A map which indicates which devices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
 		// of the `devices` slice, above.
-		keys:  keys,
+		keys:  common.DefaultKeyMap(),
 		help:  help.New(),
 		table: t,
 	}
@@ -156,10 +157,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
-
-		case key.Matches(msg, m.keys.View):
-			// Switch to the device view
-			// return m., tea.ClearScreen
 
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit

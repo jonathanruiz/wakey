@@ -3,9 +3,9 @@ package devices
 import (
 	"fmt"
 	"strconv"
+	"wakey/internal/common"
 	"wakey/internal/config"
 	"wakey/internal/devices/device"
-	"wakey/internal/groups"
 	"wakey/internal/helper/popup"
 	"wakey/internal/helper/status"
 	"wakey/internal/helper/style"
@@ -20,7 +20,7 @@ import (
 // Model for the Device component
 type Model struct {
 	devices []config.Device // list of devices to wake
-	keys    keyMap
+	keys    common.KeyMap
 	help    help.Model
 	table   table.Model
 }
@@ -82,7 +82,7 @@ func InitialModel() tea.Model {
 		// A map which indicates which devices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
 		// of the `devices` slice, above.
-		keys:  keys,
+		keys:  common.DefaultKeyMap(),
 		help:  help.New(),
 		table: t,
 	}
@@ -140,10 +140,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// return InitialModel to refresh the table
 			status.Message = fmt.Errorf("refreshing devices")
 			return InitialModel(), tea.ClearScreen
-
-		case key.Matches(msg, m.keys.View):
-			// Open the group view
-			return groups.InitialModel(), tea.ClearScreen
 
 		// Toggle help
 		case key.Matches(msg, m.keys.Help):

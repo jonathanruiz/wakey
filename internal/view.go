@@ -1,9 +1,11 @@
 package internal
 
 import (
+	"wakey/internal/common"
 	"wakey/internal/devices"
 	"wakey/internal/groups"
 
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -18,6 +20,7 @@ type Model struct {
 	CurrentView View
 	Devices     devices.Model
 	Groups      groups.Model
+	Keys        common.KeyMap
 }
 
 func InitialModel() Model {
@@ -25,6 +28,7 @@ func InitialModel() Model {
 		CurrentView: DevicesView,
 		Devices:     devices.InitialModel().(devices.Model),
 		Groups:      groups.InitialModel().(groups.Model),
+		Keys:        common.DefaultKeyMap(),
 	}
 }
 
@@ -38,6 +42,19 @@ func (m *Model) SwitchView(view View) {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch {
+		case key.Matches(msg, m.Keys.View):
+			switch m.CurrentView {
+			case DevicesView:
+				m.SwitchView(GroupsView)
+			case GroupsView:
+				m.SwitchView(DevicesView)
+			}
+		}
+	}
+
 	switch m.CurrentView {
 	case DevicesView:
 		var cmd tea.Cmd
