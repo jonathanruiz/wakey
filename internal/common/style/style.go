@@ -15,7 +15,7 @@ func getTerminalWidth() int {
 	return width
 }
 
-var termWidth = getTerminalWidth()
+var TermWidth = getTerminalWidth()
 
 // Define the style struct
 type Style struct {
@@ -68,6 +68,8 @@ var (
 	StatusStyle         = lipgloss.NewStyle().
 				Border(lipgloss.RoundedBorder()).
 				BorderForeground(lipgloss.Color("241")).
-				Width(termWidth - 5)
+				Width(TermWidth - 5)
 	StatusMessageStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("229")) // The status message style
+	FocusedTab         = lipgloss.NewStyle().Foreground(lipgloss.Color("229")).Background(lipgloss.Color("98")).Padding(0, 1)
+	BlurredTab         = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFF7DB")).Background(lipgloss.Color("240")).Padding(0, 1)
 )
