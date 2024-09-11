@@ -1,4 +1,4 @@
-package newGroup
+package group
 
 import (
 	"fmt"

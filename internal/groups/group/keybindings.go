@@ -1,4 +1,4 @@
-package newGroup
+package group
 
 import "github.com/charmbracelet/bubbles/key"
 

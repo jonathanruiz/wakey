@@ -1,10 +1,10 @@
-package group
+package groups
 
 import (
 	"fmt"
 	"strings"
 	"wakey/internal/config"
-	"wakey/internal/newGroup"
+	"wakey/internal/groups/group"
 	"wakey/internal/popup"
 	"wakey/internal/status"
 	"wakey/internal/style"
@@ -120,12 +120,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, m.keys.Create):
 			// Create a new group
-			return newGroup.InitialModel(m), nil
+			return group.InitialModel(m), nil
 		case key.Matches(msg, m.keys.Edit):
 			// Edit the selected group
 			selected := m.table.SelectedRow()
 
-			return newGroup.InitialModel(m, selected), nil
+			return group.InitialModel(m, selected), nil
 
 		case key.Matches(msg, m.keys.Delete):
 			// Delete the selected group

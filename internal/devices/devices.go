@@ -1,11 +1,11 @@
-package list
+package devices
 
 import (
 	"fmt"
 	"strconv"
 	"wakey/internal/config"
-	"wakey/internal/device"
-	"wakey/internal/group"
+	"wakey/internal/devices/device"
+	"wakey/internal/groups/group"
 	"wakey/internal/popup"
 	"wakey/internal/status"
 	"wakey/internal/style"
