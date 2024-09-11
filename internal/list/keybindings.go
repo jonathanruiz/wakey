@@ -11,7 +11,7 @@ type keyMap struct {
 	Create  key.Binding
 	Edit    key.Binding
 	Delete  key.Binding
-	Group   key.Binding
+	View    key.Binding
 	Refresh key.Binding
 	Help    key.Binding
 	Quit    key.Binding
@@ -29,7 +29,7 @@ func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Up, k.Down}, // first column
 		{k.Enter, k.Create, k.Edit, k.Delete, k.Refresh}, // second column
-		{k.Help, k.Group, k.Quit},                        // third column
+		{k.Help, k.View, k.Quit},                         // third column
 	}
 }
 
@@ -59,9 +59,9 @@ var keys = keyMap{
 		key.WithKeys("d"),
 		key.WithHelp("d", "delete device"),
 	),
-	Group: key.NewBinding(
-		key.WithKeys("g"),
-		key.WithHelp("g", "group devices"),
+	View: key.NewBinding(
+		key.WithKeys("tab"),
+		key.WithHelp("tab", "switch view"),
 	),
 	Refresh: key.NewBinding(
 		key.WithKeys("r"),
