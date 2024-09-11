@@ -35,7 +35,7 @@ func InitialModel(previousModel tea.Model) tea.Model {
 
 	// Define table columns
 	columns := []table.Column{
-		{Title: "ID", Width: 10},
+		{Title: "ID", Width: 0},
 		{Title: "Group Name", Width: 20},
 		{Title: "Devices", Width: 30},
 	}
