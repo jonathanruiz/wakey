@@ -27,13 +27,13 @@ func (k KeyMap) ShortHelp() []key.Binding {
 // key.Map interface.
 func (k KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down}, // first column
+		{k.Up, k.Down, k.View},                           // first column
 		{k.Enter, k.Create, k.Edit, k.Delete, k.Refresh}, // second column
-		{k.Help, k.View, k.Quit},                         // third column
+		{k.Help, k.Quit},                                 // third column
 	}
 }
 
-// Keybindings for the Device component
+// Keybindings for the Device and Groups view
 func DefaultKeyMap() KeyMap {
 	return KeyMap{
 		Up: key.NewBinding(
@@ -50,15 +50,15 @@ func DefaultKeyMap() KeyMap {
 		),
 		Create: key.NewBinding(
 			key.WithKeys("c"),
-			key.WithHelp("c", "create device"),
+			key.WithHelp("c", "create"),
 		),
 		Edit: key.NewBinding(
 			key.WithKeys("e"),
-			key.WithHelp("e", "edit device"),
+			key.WithHelp("e", "edit"),
 		),
 		Delete: key.NewBinding(
 			key.WithKeys("d"),
-			key.WithHelp("d", "delete device"),
+			key.WithHelp("d", "delete"),
 		),
 		View: key.NewBinding(
 			key.WithKeys("tab"),
