@@ -56,11 +56,11 @@ wakey
 
 You can either wake up individual devices or groups of devices. When you first run the application, you will be presented with a list of devices. You can easily switch between the list of devices and groups by pressing `tab`.
 
-![Switch between devices and groups](./vhs/switch-view.gif)
-
 You can then use VIM motions or the up or down arrow keys to navigate between the individual devices or groups. To wake up a device or group of devices, press `Enter`.
 
-### Creating a new device or group
+![Switch between devices and groups](./vhs/switch-view.gif)
+
+### Creating/editing a new device or group
 
 When in the list view, you can press `n` to create a new device or group. You will then be prompted to enter the details of the device or group.
 
@@ -70,9 +70,17 @@ When creating a new group, you will be prompted to enter the `Group Name` and `D
 
 There is validation on all the fields and it will not allow you to create a device without all the fields filled out correctly. If there is field that is not filled out correctly, an error message will be displayed aside the field that needs to be corrected.
 
+You can also edit a device or group by navigating to the device or group that you want to edit and pressing `e`.
+
+![Create a new device or group](./vhs/create.gif)
+
 ### Refreshing the list
 
 When in the list view, you can press `r` to refresh the list of devices. This will update the status of the devices in the list to determine if they are online or offline. The way the application determines if a device is online or offline is by pinging the device's IP address.
+
+### Deleting a device or group
+
+When in the list view, you can press `d` to delete a device or group. You will be prompted to confirm the deletion of the device or group.
 
 ### View more keybindings
 
