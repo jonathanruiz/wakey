@@ -2,6 +2,7 @@ package groups
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"wakey/internal/common"
 	"wakey/internal/common/popup"
@@ -215,6 +216,9 @@ func (m Model) View() string {
 
 	// Render the table
 	s += m.table.View() + "\n"
+
+	// Group count
+	s += style.CountStyle.Render(" Number of devices: "+strconv.Itoa(len(m.table.Rows()))) + "\n" // srtconv.Itoa converts int to string
 
 	// Status message
 	var statusMessage string

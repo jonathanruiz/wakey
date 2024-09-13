@@ -202,7 +202,7 @@ func (m Model) View() string {
 	s += m.table.View() + "\n"
 
 	// Show device count
-	s += style.DeviceCountStyle.Render(" Number of devices: "+strconv.Itoa(len(m.table.Rows()))) + "\n" // srtconv.Itoa converts int to string
+	s += style.CountStyle.Render(" Number of devices: "+strconv.Itoa(len(m.table.Rows()))) + "\n" // srtconv.Itoa converts int to string
 
 	// Status message
 	var statusMessage string

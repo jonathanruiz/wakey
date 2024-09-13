@@ -27,7 +27,7 @@ type Style struct {
 	cursorModeHelpStyle lipgloss.Style
 	titleStyle          lipgloss.Style
 	italicHeaderStyle   lipgloss.Style
-	deviceCountStyle    lipgloss.Style
+	countStyle          lipgloss.Style
 	errStyle            lipgloss.Style
 	statusStyle         lipgloss.Style
 	statusMessageStyle  lipgloss.Style
@@ -63,7 +63,7 @@ var (
 	CursorModeHelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
 	TitleStyle          = lipgloss.NewStyle().Bold(true)
 	ItalicHeaderStyle   = lipgloss.NewStyle().Italic(true)
-	DeviceCountStyle    = CursorModeHelpStyle
+	CountStyle          = CursorModeHelpStyle
 	ErrStyle            = lipgloss.NewStyle().Foreground(lipgloss.Color("178")).Render // The error style
 	StatusStyle         = lipgloss.NewStyle().
 				Border(lipgloss.RoundedBorder()).
