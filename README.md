@@ -52,11 +52,23 @@ wakey
 
 ## Usage
 
-### List of devices
+### Navigating between devices and groups
 
-Running the application will immediately display a list of devices that you can wake up. Within the application, you be able to add your own devices along with additional details.
+You can either wake up individual devices or groups of devices. When you first run the application, you will be presented with a list of devices. You can easily switch between the list of devices and groups by pressing `tab`.
 
-You can navigate through the list using the arrow keys or VIM motions navigation and press `Enter` to wake up the selected device.
+![Switch between devices and groups](./vhs/switch-view.gif)
+
+You can then use VIM motions or the up or down arrow keys to navigate between the individual devices or groups. To wake up a device or group of devices, press `Enter`.
+
+### Creating a new device or group
+
+When in the list view, you can press `n` to create a new device or group. You will then be prompted to enter the details of the device or group.
+
+When creating a new device, you will be prompted to enter the the `Device Name`, `Description`, `MAC Address`, and `IP Address` of the device.
+
+When creating a new group, you will be prompted to enter the `Group Name` and `Devices`. Select the devices that you want to add to the group by entering the device name. If you want to add multiple devices to the group, separate the device names with a comma.
+
+There is validation on all the fields and it will not allow you to create a device without all the fields filled out correctly. If there is field that is not filled out correctly, an error message will be displayed aside the field that needs to be corrected.
 
 ### Refreshing the list
 
@@ -64,7 +76,7 @@ When in the list view, you can press `r` to refresh the list of devices. This wi
 
 ### View more keybindings
 
-You can also press `ctrl + h` to display all the available keybindings. Keybidings vary between different parts of the applicaiton so make sure to check the keybindings when you are in a specific view.
+You can also press `ctrl + h` to display all the available keybindings. Keybindings vary between different parts of the application so make sure to check the keybindings when you are in a specific view.
 
 ![View more keybindings](./vhs/help.gif)
 
