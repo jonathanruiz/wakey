@@ -12,7 +12,7 @@ The computer is woken up by sending a "magic packet" that contains the MAC addre
 
 ## Installation
 
-### MacOS
+### MacOS Installation
 
 For MacOS users, you can install `wakey` using Homebrew:
 
@@ -95,6 +95,76 @@ You can add your own devices to the configuration file by adding the following J
 - `MACAddress` is the MAC address of the device.
 - `IPAddress` is the IP address of the device.
 - `Status` is the status of the device. This will be updated by the application. It will ping the device to determine if it is online or offline.
+
+## FAQS
+
+### How do I enable Wake-on-LAN on my computer?
+
+First of all, you need to make sure that your computer supports Wake-on-LAN. Most modern computers support Wake-on-LAN, but you may need to enable it in the BIOS settings. Check with your computer's manufacturer for more information on how to enable Wake-on-LAN in the BIOS as the steps may vary from computer to computer. This will apply for both Windows and Linux machines but for MacOS computers, you can [enable Wake-on-LAN in the System Settings](#enable-wol-on-macos).
+
+#### Enable WoL on Windows
+
+For Windows computers, you can enable Wake-on-LAN by following these steps:
+
+1. Open the Device Manager by searching for "Device Manager" in the search bar.
+2. Expand the "Network adapters" section.
+3. Right-click on your network adapter and select "Properties".
+4. Click on the "Power Management" tab.
+5. Uncheck the box that says "Allow the computer to turn off this device to save power".
+6. Check the box that says "Allow this device to wake the computer".
+7. Click "OK" to save the changes.
+
+#### Enable WoL on MacOS
+
+For MacOS computers, you can enable Wake-on-LAN by following these steps:
+
+1. Open the System Settings.
+2. Click on "Battery".
+3. Select the "Options..." button.
+4. Select the "Wake for network access" dropdown and choose "Always".
+
+#### Enable WoL on Linux
+
+Due to the variety of Linux distributions, the steps to enable Wake-on-LAN may vary. I suggest you look up the instructions for your specific distribution, but the general idea is the same.
+
+I suggest you check out Techno Tim's blog on how to enable Wake-on-LAN on Linux [here](https://technotim.live/posts/wake-on-lan/#waking-up-a-linux-machine).
+
+### How do I find the MAC address of my computer?
+
+To find the MAC Address of your Windows or MacOS machine, you can do so through by following these steps.
+
+#### Find MAC Address on Windows
+
+1. Open the Command Prompt by searching for "cmd" in the search bar.
+2. Type `ipconfig /all` and press Enter.
+3. Look for the "Physical Address" under the network adapter that you are using.
+
+#### Find MAC Address on MacOS
+
+1. Open the Terminal.
+2. Type `ifconfig` and press Enter.
+3. Look for the device that you are using (usually `en0` or `en1`) and look for the "ether" field. Alternatively, you can search for the network adapter that has the IP address that you are using. Once you find the network adapter, look for the "ether" field and that value is your MAC address.
+
+#### Find MAC Address on Linux
+
+Instructions may vary for the different flavors of Linux. I suggest you look up the instructions for your specific distribution, but the general idea is the same.
+
+### My Windows computer is online but `wakey` says it is offline. Why can't I ping it?
+
+If you are trying to wake up a Windows computer, you may need to enable ICMPv4 Echo Requests in the Windows Firewall settings. You can do this by following these steps:
+
+1. Open the Windows Firewall settings by searching for "Windows Defender Firewall with Advanced Security" in the search bar.
+2. Click on "Inbound Rules" on the left side of the window.
+3. Scroll down to "File and Printer Sharing (Echo Request - ICMPv4-In)" and enable the rule.
+
+Additionally, you may need to make sure that your computer is not connected to a public network. If you are connected to a public network, the Windows Firewall will block all incoming ICMP requests. To change the network profile, follow these steps:
+
+1. Open the Windows Settings.
+2. Click on "Network & Internet".
+3. Click on "Wi-Fi" or "Ethernet" depending on your connection.
+4. From here you can switch the network profile to "Private network".
+
+For security reasons, only change this setting if you are on a trusted network.
 
 ## Contributing
 
