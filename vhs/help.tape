@@ -35,6 +35,6 @@ Type "j"
 Sleep 1s
 
 # Show Help
-Type "?"
+Ctrl+H
 
 Sleep 3s
