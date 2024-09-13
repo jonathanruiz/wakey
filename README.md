@@ -1,6 +1,6 @@
 # wakey
 
-A TUI built on Charm CLI tools for managing and waking your devices using Wake-on-LAN.
+A TUI built for managing and waking your devices using Wake-on-LAN.
 
 ![Wake demo](./vhs/demo.gif)
 
@@ -81,6 +81,8 @@ When in the list view, you can press `r` to refresh the list of devices. This wi
 ### Deleting a device or group
 
 When in the list view, you can press `d` to delete a device or group. You will be prompted to confirm the deletion of the device or group.
+
+![Delete a device or group](./vhs/delete.gif)
 
 ### View more keybindings
 
