@@ -2,6 +2,7 @@ package groups
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"wakey/internal/common"
 	"wakey/internal/common/popup"
@@ -37,8 +38,8 @@ func InitialModel() tea.Model {
 	// Define table columns
 	columns := []table.Column{
 		{Title: "ID", Width: 0},
-		{Title: "Group Name", Width: 20},
-		{Title: "Devices", Width: 30},
+		{Title: "Group Name", Width: style.TermWidth / 2},
+		{Title: "Devices", Width: style.TermWidth / 2},
 	}
 
 	// Define table rows
@@ -215,6 +216,9 @@ func (m Model) View() string {
 
 	// Render the table
 	s += m.table.View() + "\n"
+
+	// Group count
+	s += style.CountStyle.Render(" Number of devices: "+strconv.Itoa(len(m.table.Rows()))) + "\n" // srtconv.Itoa converts int to string
 
 	// Status message
 	var statusMessage string

@@ -1,5 +1,4 @@
-# Where should we write the GIF?
-Output help.gif
+Output switch-view.gif
 
 # Set up a 1200x600 terminal with 46px font.
 Set FontSize 16
@@ -22,11 +21,7 @@ Show
 
 Sleep 2s
 
-Type "j"
-
-Sleep 1s
-
-Type "k"
+Tab
 
 Sleep 1s
 
@@ -34,7 +29,6 @@ Type "j"
 
 Sleep 1s
 
-# Show Help
-Ctrl+H
+Tab 
 
 Sleep 3s

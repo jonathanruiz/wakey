@@ -7,7 +7,7 @@ import (
 	"golang.org/x/term"
 )
 
-func getTerminalWidth() int {
+func GetTerminalWidth() int {
 	width, _, err := term.GetSize(int(os.Stdout.Fd()))
 	if err != nil {
 		return 80 // default width if there's an error
@@ -15,7 +15,7 @@ func getTerminalWidth() int {
 	return width
 }
 
-var TermWidth = getTerminalWidth()
+var TermWidth = GetTerminalWidth()
 
 // Define the style struct
 type Style struct {
@@ -27,7 +27,7 @@ type Style struct {
 	cursorModeHelpStyle lipgloss.Style
 	titleStyle          lipgloss.Style
 	italicHeaderStyle   lipgloss.Style
-	deviceCountStyle    lipgloss.Style
+	countStyle          lipgloss.Style
 	errStyle            lipgloss.Style
 	statusStyle         lipgloss.Style
 	statusMessageStyle  lipgloss.Style
@@ -63,12 +63,12 @@ var (
 	CursorModeHelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
 	TitleStyle          = lipgloss.NewStyle().Bold(true)
 	ItalicHeaderStyle   = lipgloss.NewStyle().Italic(true)
-	DeviceCountStyle    = CursorModeHelpStyle
+	CountStyle          = CursorModeHelpStyle
 	ErrStyle            = lipgloss.NewStyle().Foreground(lipgloss.Color("178")).Render // The error style
 	StatusStyle         = lipgloss.NewStyle().
 				Border(lipgloss.RoundedBorder()).
 				BorderForeground(lipgloss.Color("241")).
-				Width(TermWidth - 5)
+				Width(TermWidth - 2)
 	StatusMessageStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("229")) // The status message style
 	FocusedTab         = lipgloss.NewStyle().Foreground(lipgloss.Color("229")).Background(lipgloss.Color("98")).Padding(0, 1)
 	BlurredTab         = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFF7DB")).Background(lipgloss.Color("240")).Padding(0, 1)

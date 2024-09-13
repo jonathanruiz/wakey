@@ -34,11 +34,11 @@ func InitialModel() tea.Model {
 	// Define table columns
 	columns := []table.Column{
 		{Title: "ID", Width: 0},
-		{Title: "Device", Width: 20},
-		{Title: "Description", Width: 20},
-		{Title: "MAC Address", Width: 20},
-		{Title: "IP Address", Width: 15},
-		{Title: "State", Width: 15},
+		{Title: "Device", Width: style.TermWidth * 15 / 100},
+		{Title: "Description", Width: style.TermWidth * 30 / 100},
+		{Title: "MAC Address", Width: style.TermWidth * 20 / 100},
+		{Title: "IP Address", Width: style.TermWidth * 20 / 100},
+		{Title: "State", Width: style.TermWidth * 15 / 100},
 	}
 
 	// Define table rows
@@ -202,7 +202,7 @@ func (m Model) View() string {
 	s += m.table.View() + "\n"
 
 	// Show device count
-	s += style.DeviceCountStyle.Render(" Number of devices: "+strconv.Itoa(len(m.table.Rows()))) + "\n" // srtconv.Itoa converts int to string
+	s += style.CountStyle.Render(" Number of devices: "+strconv.Itoa(len(m.table.Rows()))) + "\n" // srtconv.Itoa converts int to string
 
 	// Status message
 	var statusMessage string
