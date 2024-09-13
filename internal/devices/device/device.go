@@ -168,7 +168,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 									Description: m.inputs[1].Value(),
 									MacAddress:  m.inputs[2].Value(),
 									IPAddress:   m.inputs[3].Value(),
-									State:       "Offline",
+									State:       m.currentConfig.Devices[i].State,
 								}
 								break
 							}
