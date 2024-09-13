@@ -38,8 +38,8 @@ func InitialModel() tea.Model {
 	// Define table columns
 	columns := []table.Column{
 		{Title: "ID", Width: 0},
-		{Title: "Group Name", Width: 20},
-		{Title: "Devices", Width: 30},
+		{Title: "Group Name", Width: style.TermWidth / 2},
+		{Title: "Devices", Width: style.TermWidth / 2},
 	}
 
 	// Define table rows
