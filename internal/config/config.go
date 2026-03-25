@@ -90,7 +90,7 @@ func createTables(conn *sql.DB) error {
 	return err
 }
 
-// CreateConfig initializes the SQLite database and migrates any existing JSON config.
+// CreateConfig initializes the SQLite database
 func CreateConfig() error {
 	if HomeDirErr != nil {
 		return fmt.Errorf("error getting home directory: %v", HomeDirErr)
