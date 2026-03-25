@@ -52,10 +52,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch m.CurrentView {
 			case DevicesView:
 				m.SwitchView(GroupsView)
+				return m, tea.ClearScreen
 			case GroupsView:
 				m.SwitchView(DevicesView)
+				return m, tea.Batch(tea.ClearScreen, devices.UpdateStateCmd())
 			}
-			return m, tea.ClearScreen
 		}
 	}
 

@@ -1,173 +1,255 @@
 package config
 
 import (
-	"encoding/json"
+	"database/sql"
 	"fmt"
 	"os"
 	"path/filepath"
 	"wakey/internal/common/wol"
+
+	_ "modernc.org/sqlite"
 )
 
-// Config struct for the config file.
 type Device struct {
-	ID          string `json:"ID"`
-	DeviceName  string `json:"DeviceName"`
-	Description string `json:"Description"`
-	MacAddress  string `json:"MacAddress"`
-	IPAddress   string `json:"IPAddress"`
-	State       string `json:"State"`
+	ID          string
+	DeviceName  string
+	Description string
+	MacAddress  string
+	IPAddress   string
+	State       string
 }
 
 type Group struct {
-	ID        string   `json:"ID"`
-	GroupName string   `json:"GroupName"`
-	Devices   []string `json:"Devices"` // contains IDs of devices
+	ID        string
+	GroupName string
+	Devices   []string // contains IDs of devices
 }
 
-// Config struct for the config file.
 type Config struct {
-	Devices []Device `json:"devices"`
-	Groups  []Group  `json:"groups"`
+	Devices []Device
+	Groups  []Group
 }
 
 var (
-	HomeDir, HomeDirErr = os.UserHomeDir()                             // Get the users home directory
-	ConfigPath          = filepath.Join(HomeDir, ".wakey_config.json") // Create the path to the config file
+	HomeDir, HomeDirErr = os.UserHomeDir()
+	DBPath              string
+	db                  *sql.DB
 )
 
-// Create a config file if it doesn't exist in the users home directory.
-// Returns the contents of the config file.
-func CreateConfig() error {
+func init() {
+	if HomeDirErr == nil {
+		DBPath = filepath.Join(HomeDir, ".wakey.db")
+	}
+}
 
-	// Check if we got an error
+func getDB() (*sql.DB, error) {
+	if db != nil {
+		return db, nil
+	}
 	if HomeDirErr != nil {
+		return nil, fmt.Errorf("error getting home directory: %v", HomeDirErr)
+	}
+	conn, err := sql.Open("sqlite", DBPath)
+	if err != nil {
+		return nil, fmt.Errorf("error opening database: %v", err)
+	}
+	conn.SetMaxOpenConns(1)
+	db = conn
+	return db, nil
+}
 
+// ResetDB closes and clears the cached DB connection. Used in tests.
+func ResetDB() {
+	if db != nil {
+		db.Close()
+		db = nil
+	}
+}
+
+func createTables(conn *sql.DB) error {
+	_, err := conn.Exec(`
+		CREATE TABLE IF NOT EXISTS devices (
+			id          TEXT PRIMARY KEY,
+			device_name TEXT NOT NULL DEFAULT '',
+			description TEXT NOT NULL DEFAULT '',
+			mac_address TEXT NOT NULL DEFAULT '',
+			ip_address  TEXT NOT NULL DEFAULT '',
+			state       TEXT NOT NULL DEFAULT 'Offline'
+		);
+		CREATE TABLE IF NOT EXISTS groups (
+			id         TEXT PRIMARY KEY,
+			group_name TEXT NOT NULL DEFAULT ''
+		);
+		CREATE TABLE IF NOT EXISTS group_devices (
+			group_id  TEXT NOT NULL,
+			device_id TEXT NOT NULL,
+			PRIMARY KEY (group_id, device_id)
+		);
+	`)
+	return err
+}
+
+// CreateConfig initializes the SQLite database
+func CreateConfig() error {
+	if HomeDirErr != nil {
 		return fmt.Errorf("error getting home directory: %v", HomeDirErr)
 	}
 
-	// Create the path to the config file
-	configPath := filepath.Join(HomeDir, ".wakey_config.json")
-
-	// Check if the config file exists
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		// If it doesn't exist, create it
-		config := Config{
-			Devices: []Device{},
-			Groups:  []Group{},
-		}
-
-		// Marshal the config to JSON
-		data, err := json.MarshalIndent(config, "", "  ")
-
-		// Check if we got an error
-		if err != nil {
-			return fmt.Errorf("error marshalling config: %v", err)
-		}
-
-		// Write the config to the file
-		err = os.WriteFile(configPath, data, 0644)
-
-		// Check if we got an error
-		if err != nil {
-			return fmt.Errorf("error writing config file: %v", err)
-		}
-
-		// Print a message to the user
-		return fmt.Errorf("Config file created at: %v", configPath)
-	} else {
-		// Print a message to the user
-		return fmt.Errorf("Config file already exists at: %v", configPath)
+	conn, err := getDB()
+	if err != nil {
+		return fmt.Errorf("error opening database: %v", err)
 	}
+
+	if err := createTables(conn); err != nil {
+		return fmt.Errorf("error creating tables: %v", err)
+	}
+
+	return fmt.Errorf("database ready at: %v", DBPath)
 }
 
-// Read the config file and return the contents.
+// ReadConfig reads all devices and groups from the database.
 func ReadConfig() Config {
-	// Check if we got an error
-	if HomeDirErr != nil {
-		fmt.Println("Error getting home directory:", HomeDirErr)
-		return Config{}
-	}
-
-	// Read the config file
-	data, err := os.ReadFile(ConfigPath)
+	conn, err := getDB()
 	if err != nil {
-		fmt.Println("error reading config file:", err)
+		fmt.Println("error opening database:", err)
 		return Config{}
 	}
 
-	// Unmarshal the JSON data into a Config struct
-	var config Config
-	err = json.Unmarshal(data, &config)
+	devices, err := readDevices(conn)
 	if err != nil {
-		fmt.Println("Error unmarshalling config:", err)
+		fmt.Println("error reading devices:", err)
 		return Config{}
 	}
 
-	return config
+	groups, err := readGroups(conn)
+	if err != nil {
+		fmt.Println("error reading groups:", err)
+		return Config{Devices: devices}
+	}
+
+	return Config{Devices: devices, Groups: groups}
 }
 
-// Write the config to the config file.
+func readDevices(conn *sql.DB) ([]Device, error) {
+	rows, err := conn.Query(`SELECT id, device_name, description, mac_address, ip_address, state FROM devices`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var devices []Device
+	for rows.Next() {
+		var d Device
+		if err := rows.Scan(&d.ID, &d.DeviceName, &d.Description, &d.MacAddress, &d.IPAddress, &d.State); err != nil {
+			return nil, err
+		}
+		devices = append(devices, d)
+	}
+	if devices == nil {
+		devices = []Device{}
+	}
+	return devices, nil
+}
+
+func readGroups(conn *sql.DB) ([]Group, error) {
+	rows, err := conn.Query(`
+		SELECT g.id, g.group_name, gd.device_id
+		FROM groups g
+		LEFT JOIN group_devices gd ON g.id = gd.group_id
+		ORDER BY g.id
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	groupMap := make(map[string]*Group)
+	var order []string
+	for rows.Next() {
+		var groupID, groupName string
+		var deviceID sql.NullString
+		if err := rows.Scan(&groupID, &groupName, &deviceID); err != nil {
+			return nil, err
+		}
+		if _, exists := groupMap[groupID]; !exists {
+			groupMap[groupID] = &Group{ID: groupID, GroupName: groupName, Devices: []string{}}
+			order = append(order, groupID)
+		}
+		if deviceID.Valid {
+			groupMap[groupID].Devices = append(groupMap[groupID].Devices, deviceID.String)
+		}
+	}
+
+	groups := make([]Group, len(order))
+	for i, id := range order {
+		groups[i] = *groupMap[id]
+	}
+	if groups == nil {
+		groups = []Group{}
+	}
+	return groups, nil
+}
+
+// WriteConfig replaces all devices and groups in the database with the given config.
 func WriteConfig(config Config) {
-	// Marshal the config to JSON
-	data, err := json.MarshalIndent(config, "", "  ")
-
-	// Check if we got an error
+	conn, err := getDB()
 	if err != nil {
-		fmt.Println("Error marshalling config:", err)
+		fmt.Println("error opening database:", err)
 		return
 	}
 
-	// Write the config to the file
-	err = os.WriteFile(ConfigPath, data, 0644)
-
-	// Check if we got an error
+	tx, err := conn.Begin()
 	if err != nil {
-		fmt.Println("Error writing config file:", err)
+		fmt.Println("error starting transaction:", err)
 		return
 	}
+	defer tx.Rollback()
 
-	// Print a message to the user
-	fmt.Println("Config file updated at", ConfigPath)
+	tx.Exec(`DELETE FROM group_devices`)
+	tx.Exec(`DELETE FROM groups`)
+	tx.Exec(`DELETE FROM devices`)
+
+	for _, d := range config.Devices {
+		if _, err := tx.Exec(
+			`INSERT INTO devices (id, device_name, description, mac_address, ip_address, state) VALUES (?, ?, ?, ?, ?, ?)`,
+			d.ID, d.DeviceName, d.Description, d.MacAddress, d.IPAddress, d.State,
+		); err != nil {
+			fmt.Println("error inserting device:", err)
+			return
+		}
+	}
+
+	for _, g := range config.Groups {
+		if _, err := tx.Exec(`INSERT INTO groups (id, group_name) VALUES (?, ?)`, g.ID, g.GroupName); err != nil {
+			fmt.Println("error inserting group:", err)
+			return
+		}
+		for _, deviceID := range g.Devices {
+			if _, err := tx.Exec(`INSERT INTO group_devices (group_id, device_id) VALUES (?, ?)`, g.ID, deviceID); err != nil {
+				fmt.Println("error inserting group device:", err)
+				return
+			}
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		fmt.Println("error committing transaction:", err)
+	}
 }
 
-// Update the State of the devices
+// GetUpdateState pings each device and updates its state in the database.
 func GetUpdateState() Config {
-	// Get the devices
 	cfg := ReadConfig()
 	devices := cfg.Devices
-	groups := cfg.Groups
 
-	// Loop through the devices
 	for i, device := range devices {
-		// Get the State of the device
-		isOnline := wol.IsOnline(device.IPAddress)
-
-		// Update the State of the device
-		if isOnline {
+		if wol.IsOnline(device.IPAddress) {
 			devices[i].State = "Online"
 		} else {
 			devices[i].State = "Offline"
 		}
 	}
 
-	// Write the updated config file
-	WriteConfig(Config{Devices: devices, Groups: groups})
-
-	// Return the config file
-	return Config{Devices: devices, Groups: groups}
-}
-
-/*
-Convert the config to a JSON string.
-
-Helpful for debugging and seeing the contents of the config.
-Might not be necessary anymore since `ReadConfig()` returns a `Config` struct as JSON.
-*/
-func (c Config) ConfigToString() string {
-	data, err := json.MarshalIndent(c, "", "  ")
-	if err != nil {
-		fmt.Println("error marshalling config:", err)
-		return ""
-	}
-	return string(data)
+	WriteConfig(Config{Devices: devices, Groups: cfg.Groups})
+	return Config{Devices: devices, Groups: cfg.Groups}
 }

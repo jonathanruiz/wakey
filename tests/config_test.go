@@ -7,27 +7,41 @@ import (
 )
 
 func TestReadConfig(t *testing.T) {
-	// Setup: Create a temporary config file
-	tempFile, err := os.CreateTemp("", "config_test_*.json")
+	// Setup: use a temp SQLite database
+	tmpFile, err := os.CreateTemp("", "wakey_test_*.db")
 	if err != nil {
-		t.Fatalf("Failed to create temp file: %v", err)
+		t.Fatalf("Failed to create temp db file: %v", err)
 	}
-	defer os.Remove(tempFile.Name())
+	tmpFile.Close()
+	defer os.Remove(tmpFile.Name())
 
-	// Write sample config data to the temp file
-	sampleConfig := `{"Devices": [{"DeviceName": "Device1", "Description": "This is a test device.", "MACAddress": "00:00:00:00:00:00", "IPADdress": "1.1.1.1"}]}`
-	if _, err := tempFile.Write([]byte(sampleConfig)); err != nil {
-		t.Fatalf("Failed to write to temp file: %v", err)
+	config.DBPath = tmpFile.Name()
+	config.ResetDB()
+	if err := config.CreateConfig(); err != nil {
+		// CreateConfig returns a non-nil error on success (used as status message)
+		_ = err
 	}
-	tempFile.Close()
 
-	// Override the ConfigPath to point to the temp file
-	config.ConfigPath = tempFile.Name()
+	// Write a device directly via WriteConfig
+	sample := config.Config{
+		Devices: []config.Device{
+			{
+				ID:          "test-id-1",
+				DeviceName:  "Device1",
+				Description: "This is a test device.",
+				MacAddress:  "00:00:00:00:00:00",
+				IPAddress:   "1.1.1.1",
+				State:       "Offline",
+			},
+		},
+		Groups: []config.Group{},
+	}
+	config.WriteConfig(sample)
 
 	// Execute: Call ReadConfig
 	cfg := config.ReadConfig()
 
-	// Verify: Check if the config was read correctly
+	// Verify
 	if len(cfg.Devices) != 1 || cfg.Devices[0].DeviceName != "Device1" {
 		t.Errorf("Expected Device1, got %v", cfg.Devices)
 	}
