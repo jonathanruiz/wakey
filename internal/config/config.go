@@ -105,20 +105,6 @@ func CreateConfig() error {
 		return fmt.Errorf("error creating tables: %v", err)
 	}
 
-	// Migrate from JSON config if it exists
-	jsonPath := filepath.Join(HomeDir, ".wakey_config.json")
-	if data, err := os.ReadFile(jsonPath); err == nil {
-		var jsonConfig struct {
-			Devices []Device `json:"devices"`
-			Groups  []Group  `json:"groups"`
-		}
-		if json.Unmarshal(data, &jsonConfig) == nil {
-			WriteConfig(Config{Devices: jsonConfig.Devices, Groups: jsonConfig.Groups})
-			os.Rename(jsonPath, jsonPath+".migrated")
-			return fmt.Errorf("migrated config from JSON to SQLite at: %v", DBPath)
-		}
-	}
-
 	return fmt.Errorf("database ready at: %v", DBPath)
 }
 
