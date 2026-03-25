@@ -152,35 +152,37 @@ func readDevices(conn *sql.DB) ([]Device, error) {
 }
 
 func readGroups(conn *sql.DB) ([]Group, error) {
-	rows, err := conn.Query(`SELECT id, group_name FROM groups`)
+	rows, err := conn.Query(`
+		SELECT g.id, g.group_name, gd.device_id
+		FROM groups g
+		LEFT JOIN group_devices gd ON g.id = gd.group_id
+		ORDER BY g.id
+	`)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var groups []Group
+	groupMap := make(map[string]*Group)
+	var order []string
 	for rows.Next() {
-		var g Group
-		if err := rows.Scan(&g.ID, &g.GroupName); err != nil {
+		var groupID, groupName string
+		var deviceID sql.NullString
+		if err := rows.Scan(&groupID, &groupName, &deviceID); err != nil {
 			return nil, err
 		}
+		if _, exists := groupMap[groupID]; !exists {
+			groupMap[groupID] = &Group{ID: groupID, GroupName: groupName, Devices: []string{}}
+			order = append(order, groupID)
+		}
+		if deviceID.Valid {
+			groupMap[groupID].Devices = append(groupMap[groupID].Devices, deviceID.String)
+		}
+	}
 
-		deviceRows, err := conn.Query(`SELECT device_id FROM group_devices WHERE group_id = ?`, g.ID)
-		if err != nil {
-			return nil, err
-		}
-		for deviceRows.Next() {
-			var deviceID string
-			if err := deviceRows.Scan(&deviceID); err == nil {
-				g.Devices = append(g.Devices, deviceID)
-			}
-		}
-		deviceRows.Close()
-
-		if g.Devices == nil {
-			g.Devices = []string{}
-		}
-		groups = append(groups, g)
+	groups := make([]Group, len(order))
+	for i, id := range order {
+		groups[i] = *groupMap[id]
 	}
 	if groups == nil {
 		groups = []Group{}

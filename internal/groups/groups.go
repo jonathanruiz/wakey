@@ -32,8 +32,8 @@ func (m Model) Init() tea.Cmd { return nil }
 
 // InitialModel function for the Group model
 func InitialModel() tea.Model {
-	// Get groups with updated state
-	groups := config.GetUpdateState().Groups
+	// Load groups from DB
+	groups := config.ReadConfig().Groups
 
 	// Define table columns
 	columns := []table.Column{

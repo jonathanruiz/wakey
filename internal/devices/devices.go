@@ -26,10 +26,23 @@ type Model struct {
 	table   table.Model
 }
 
+// StateUpdatedMsg is sent when background device ping completes.
+type StateUpdatedMsg struct {
+	Devices []config.Device
+}
+
+// UpdateStateCmd runs GetUpdateState in the background and returns a StateUpdatedMsg.
+func UpdateStateCmd() tea.Cmd {
+	return func() tea.Msg {
+		cfg := config.GetUpdateState()
+		return StateUpdatedMsg{Devices: cfg.Devices}
+	}
+}
+
 // InitialModel function for the Device model
 func InitialModel() tea.Model {
-	// Get devices with updated state
-	devices := config.GetUpdateState().Devices
+	// Load devices immediately from DB without pinging
+	devices := config.ReadConfig().Devices
 
 	// Define table columns
 	columns := []table.Column{
@@ -89,8 +102,8 @@ func InitialModel() tea.Model {
 	}
 }
 
-// Init function for the Device model
-func (m Model) Init() tea.Cmd { return nil }
+// Init kicks off a background ping of all devices to update their online/offline state.
+func (m Model) Init() tea.Cmd { return UpdateStateCmd() }
 
 // Update function for the Device model
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -115,6 +128,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch msg := msg.(type) {
+	case StateUpdatedMsg:
+		m.table.SetRows(convertDevicesToRows(msg.Devices))
+		status.Message = fmt.Errorf("device states updated")
+		return m, nil
+
 	// Check if it was a key press
 	case tea.KeyMsg:
 		// Check which key was pressed
@@ -138,9 +156,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Refresh the table
 		case key.Matches(msg, m.keys.Refresh):
-			// return InitialModel to refresh the table
 			status.Message = fmt.Errorf("refreshing devices")
-			return InitialModel(), tea.ClearScreen
+			return InitialModel(), tea.Batch(tea.ClearScreen, UpdateStateCmd())
 
 		// Toggle help
 		case key.Matches(msg, m.keys.Help):
