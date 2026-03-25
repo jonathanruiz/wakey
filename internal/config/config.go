@@ -2,7 +2,6 @@ package config
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -251,14 +250,4 @@ func GetUpdateState() Config {
 
 	WriteConfig(Config{Devices: devices, Groups: cfg.Groups})
 	return Config{Devices: devices, Groups: cfg.Groups}
-}
-
-// ConfigToString returns the config as a formatted JSON string (useful for debugging).
-func (c Config) ConfigToString() string {
-	data, err := json.MarshalIndent(c, "", "  ")
-	if err != nil {
-		fmt.Println("error marshalling config:", err)
-		return ""
-	}
-	return string(data)
 }
