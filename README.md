@@ -18,7 +18,7 @@ For MacOS users, you can install `wakey` using Homebrew:
 
 ```bash
 # Tap the repository
-brew tap jonathanruiz/wakey
+brew tap jonathanruiz/homebrew-tap
 
 # Install wakey
 brew install wakey
