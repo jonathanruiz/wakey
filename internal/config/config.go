@@ -156,7 +156,7 @@ func readGroups(conn *sql.DB) ([]Group, error) {
 		SELECT g.id, g.group_name, gd.device_id
 		FROM groups g
 		LEFT JOIN group_devices gd ON g.id = gd.group_id
-		ORDER BY g.rowid
+		ORDER BY g.rowid, gd.rowid
 	`)
 	if err != nil {
 		return nil, err
