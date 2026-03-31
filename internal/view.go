@@ -49,13 +49,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.Keys.View):
-			switch m.CurrentView {
-			case DevicesView:
-				m.SwitchView(GroupsView)
-				return m, tea.ClearScreen
-			case GroupsView:
-				m.SwitchView(DevicesView)
-				return m, tea.Batch(tea.ClearScreen, devices.UpdateStateCmd())
+			switch m.CurrentModel.(type) {
+			case devices.Model, groups.Model:
+				switch m.CurrentView {
+				case DevicesView:
+					m.SwitchView(GroupsView)
+					return m, tea.ClearScreen
+				case GroupsView:
+					m.SwitchView(DevicesView)
+					return m, tea.Batch(tea.ClearScreen, devices.UpdateStateCmd())
+				}
 			}
 		}
 	}
