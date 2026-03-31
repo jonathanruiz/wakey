@@ -3,9 +3,11 @@ package cli
 import (
 	"fmt"
 	"os"
+	"strings"
 	"wakey/internal/common/wol"
 	"wakey/internal/config"
 
+	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 )
 
@@ -50,6 +52,55 @@ var groupCmd = &cobra.Command{
 	},
 }
 
+var groupCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create a new group",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		name, _ := cmd.Flags().GetString("name")
+		devicesFlag, _ := cmd.Flags().GetString("devices")
+
+		if name == "" {
+			return fmt.Errorf("group name is required (-n)")
+		}
+
+		cfg := config.ReadConfig()
+
+		// Resolve device names to IDs
+		deviceNameToID := make(map[string]string)
+		for _, d := range cfg.Devices {
+			deviceNameToID[d.DeviceName] = d.ID
+		}
+
+		// Parse the comma-separated device names and look up their IDs. If any device name is not found, return an error.
+		var deviceIDs []string
+		if devicesFlag != "" {
+			for _, deviceName := range strings.Split(devicesFlag, ",") {
+				deviceName = strings.TrimSpace(deviceName)
+				id, ok := deviceNameToID[deviceName]
+				if !ok {
+					return fmt.Errorf("device not found: %q", deviceName)
+				}
+				deviceIDs = append(deviceIDs, id)
+			}
+		}
+
+		cfg.Groups = append(cfg.Groups, config.Group{
+			ID:        uuid.NewString(),
+			GroupName: name,
+			Devices:   deviceIDs,
+		})
+		config.WriteConfig(cfg)
+
+		fmt.Printf("Group %q created\n", name)
+		return nil
+	},
+}
+
 func init() {
 	groupCmd.Flags().StringP("name", "n", "", "name of the group to wake")
+
+	groupCreateCmd.Flags().StringP("name", "n", "", "group name")
+	groupCreateCmd.Flags().StringP("devices", "d", "", "comma-separated list of device names to add to the group")
+
+	groupCmd.AddCommand(groupCreateCmd)
 }

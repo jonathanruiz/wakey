@@ -3,9 +3,11 @@ package cli
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"wakey/internal/common/wol"
 	"wakey/internal/config"
 
+	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 )
 
@@ -38,6 +40,63 @@ var deviceCmd = &cobra.Command{
 	},
 }
 
+var deviceCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create a new device",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		name, _ := cmd.Flags().GetString("name")
+		description, _ := cmd.Flags().GetString("description")
+		mac, _ := cmd.Flags().GetString("mac")
+		ip, _ := cmd.Flags().GetString("ip")
+
+		if name == "" {
+			return fmt.Errorf("device name is required (-n)")
+		}
+		if description == "" {
+			return fmt.Errorf("description is required (-d)")
+		}
+		if mac == "" {
+			return fmt.Errorf("MAC address is required (-m)")
+		}
+		if ip == "" {
+			return fmt.Errorf("IP address is required (-i)")
+		}
+
+		// Validate the MAC address format (basic validation).
+		macRegex := regexp.MustCompile(`^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$`)
+		if !macRegex.MatchString(mac) {
+			return fmt.Errorf("invalid MAC address: %q", mac)
+		}
+
+		// Validate the IP address format (basic validation).
+		var a, b, c, d int
+		if _, err := fmt.Sscanf(ip, "%d.%d.%d.%d", &a, &b, &c, &d); err != nil {
+			return fmt.Errorf("invalid IP address: %q", ip)
+		}
+
+		cfg := config.ReadConfig()
+		cfg.Devices = append(cfg.Devices, config.Device{
+			ID:          uuid.NewString(),
+			DeviceName:  name,
+			Description: description,
+			MacAddress:  mac,
+			IPAddress:   ip,
+			State:       "Offline",
+		})
+		config.WriteConfig(cfg)
+
+		fmt.Printf("Device %q created\n", name)
+		return nil
+	},
+}
+
 func init() {
 	deviceCmd.Flags().StringP("name", "n", "", "name of the device to wake")
+
+	deviceCreateCmd.Flags().StringP("name", "n", "", "device name")
+	deviceCreateCmd.Flags().StringP("description", "d", "", "device description")
+	deviceCreateCmd.Flags().StringP("mac", "m", "", "MAC address (e.g. AA:BB:CC:DD:EE:FF)")
+	deviceCreateCmd.Flags().StringP("ip", "i", "", "IP address (e.g. 192.168.1.100)")
+
+	deviceCmd.AddCommand(deviceCreateCmd)
 }
