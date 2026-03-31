@@ -44,11 +44,13 @@ var deviceCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a new device",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// Get the device details from the command flags and validate them.
 		name, _ := cmd.Flags().GetString("name")
 		description, _ := cmd.Flags().GetString("description")
 		mac, _ := cmd.Flags().GetString("mac")
 		ip, _ := cmd.Flags().GetString("ip")
 
+		// Validate that all required fields are provided.
 		if name == "" {
 			return fmt.Errorf("device name is required (-n)")
 		}
@@ -94,7 +96,9 @@ var deviceStatusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Check if a device is online",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// Get the device name from the command flags and validate it.
 		name, _ := cmd.Flags().GetString("name")
+
 		if name == "" {
 			return fmt.Errorf("device name is required (-n)")
 		}
@@ -118,13 +122,16 @@ var deviceStatusCmd = &cobra.Command{
 }
 
 func init() {
+	// wakey device -n <devicename>
 	deviceCmd.Flags().StringP("name", "n", "", "name of the device to wake")
 
+	// wakey device create -n <devicename> -d <description> -m <MAC> -i <IP>
 	deviceCreateCmd.Flags().StringP("name", "n", "", "device name")
 	deviceCreateCmd.Flags().StringP("description", "d", "", "device description")
 	deviceCreateCmd.Flags().StringP("mac", "m", "", "MAC address (e.g. AA:BB:CC:DD:EE:FF)")
 	deviceCreateCmd.Flags().StringP("ip", "i", "", "IP address (e.g. 192.168.1.100)")
 
+	// wakey device status -n <devicename>
 	deviceStatusCmd.Flags().StringP("name", "n", "", "name of the device to check")
 
 	deviceCmd.AddCommand(deviceCreateCmd)
