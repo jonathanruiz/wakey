@@ -12,11 +12,11 @@ import (
 	"wakey/internal/config"
 	"wakey/internal/groups/group"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/table"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/table"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 // Model for the Group component
@@ -68,6 +68,7 @@ func InitialModel() tea.Model {
 		table.WithRows(rows),
 		table.WithFocused(true),
 		table.WithHeight(10),
+		table.WithWidth(style.TermWidth),
 	)
 
 	// Set the custom key bindings
@@ -172,7 +173,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m Model) View() string {
+func (m Model) View() tea.View {
 	// Refactored code from lines 171 to 195
 	const maxRows = 10 // Define the maximum number of rows to display
 
@@ -231,7 +232,7 @@ func (m Model) View() string {
 
 	// Help text
 	s += m.help.View(m.keys)
-	return s
+	return tea.NewView(s)
 }
 
 // createDeviceAttributeMap creates a map of device IDs to a specified attribute

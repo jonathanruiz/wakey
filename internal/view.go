@@ -5,8 +5,8 @@ import (
 	"wakey/internal/devices"
 	"wakey/internal/groups"
 
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
+	"charm.land/bubbles/v2/key"
+	tea "charm.land/bubbletea/v2"
 )
 
 type View int
@@ -65,6 +65,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m Model) View() string {
-	return m.CurrentModel.View()
+func (m Model) View() tea.View {
+	v := m.CurrentModel.View()
+	v.AltScreen = true
+	return v
 }

@@ -11,11 +11,11 @@ import (
 	"wakey/internal/config"
 	"wakey/internal/devices/device"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/table"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/table"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 // Model for the Device component
@@ -73,6 +73,7 @@ func InitialModel() tea.Model {
 		table.WithRows(rows),
 		table.WithFocused(true),
 		table.WithHeight(10),
+		table.WithWidth(style.TermWidth),
 	)
 
 	// Set the custom key bindings
@@ -189,7 +190,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // View function for the Device model
-func (m Model) View() string {
+func (m Model) View() tea.View {
 	const maxRows = 10 // Define the maximum number of rows to display
 
 	// Get updated config file
@@ -233,7 +234,7 @@ func (m Model) View() string {
 	// Help text
 	s += m.help.View(m.keys)
 
-	return s
+	return tea.NewView(s)
 }
 
 // convertDevicesToRows converts a slice of devices to a slice of table rows

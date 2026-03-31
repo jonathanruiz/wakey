@@ -5,11 +5,11 @@ import (
 	"wakey/internal/common/status"
 	"wakey/internal/common/style"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/table"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/table"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 var (
@@ -86,7 +86,7 @@ func (m PopupMsg) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m PopupMsg) View() string {
+func (m PopupMsg) View() tea.View {
 	var buttons string
 
 	modalStyle := lipgloss.NewStyle().
@@ -105,5 +105,5 @@ func (m PopupMsg) View() string {
 	// Help text
 	helpText := m.help.View(m.keyMap)
 
-	return modalStyle.Render(fmt.Sprintf("%s\n\n%s\n\n%s", m.message, buttons, helpText))
+	return tea.NewView(modalStyle.Render(fmt.Sprintf("%s\n\n%s\n\n%s", m.message, buttons, helpText)))
 }
