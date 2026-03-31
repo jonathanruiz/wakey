@@ -25,7 +25,8 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(wakeCmd)
+	rootCmd.AddCommand(deviceCmd)
+	rootCmd.AddCommand(groupCmd)
 }
 
 func main() {
