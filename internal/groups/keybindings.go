@@ -5,15 +5,16 @@ import "charm.land/bubbles/v2/key"
 // keyMap defines a set of keybindings. To work for help it must satisfy
 // key.Map. It could also very easily be a map[string]key.Binding.
 type keyMap struct {
-	Up     key.Binding
-	Down   key.Binding
-	Enter  key.Binding
-	Create key.Binding
-	Edit   key.Binding
-	Delete key.Binding
-	View   key.Binding
-	Help   key.Binding
-	Quit   key.Binding
+	Up      key.Binding
+	Down    key.Binding
+	Enter   key.Binding
+	Create  key.Binding
+	Edit    key.Binding
+	Delete  key.Binding
+	Inspect key.Binding
+	View    key.Binding
+	Help    key.Binding
+	Quit    key.Binding
 }
 
 // ShortHelp returns keybindings to be shown in the mini help view. It's part
@@ -26,9 +27,9 @@ func (k keyMap) ShortHelp() []key.Binding {
 // key.Map interface.
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down},                        // first column
-		{k.Enter, k.Create, k.Edit, k.Delete}, // second column
-		{k.Help, k.View, k.Quit},              // third column
+		{k.Up, k.Down},                                 // first column
+		{k.Enter, k.Create, k.Edit, k.Delete, k.Inspect}, // second column
+		{k.Help, k.View, k.Quit},                       // third column
 	}
 }
 
@@ -57,6 +58,10 @@ var keys = keyMap{
 	Delete: key.NewBinding(
 		key.WithKeys("d"),
 		key.WithHelp("d", "delete group"),
+	),
+	Inspect: key.NewBinding(
+		key.WithKeys("v"),
+		key.WithHelp("v", "view group"),
 	),
 	View: key.NewBinding(
 		key.WithKeys("tab"),

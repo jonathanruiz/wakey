@@ -147,6 +147,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selected := m.table.SelectedRow()
 			return device.InitialModel(m, selected), nil
 
+		case key.Matches(msg, m.keys.Inspect):
+			selected := m.table.SelectedRow()
+			return device.InitialDetailModel(m, selected), nil
+
 		// Delete device
 		case key.Matches(msg, m.keys.Delete):
 			// Get the selected device
