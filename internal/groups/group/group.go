@@ -75,6 +75,7 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 	for i := range m.inputs {
 		ti = textinput.New()
 		ti.CharLimit = 64
+		ti.SetWidth(style.TermWidth / 2)
 
 		switch i {
 		// Group name
