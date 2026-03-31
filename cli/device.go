@@ -13,11 +13,13 @@ var deviceCmd = &cobra.Command{
 	Use:   "device",
 	Short: "Wake a device by name",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// Get the device name from the command flags and validate it.
 		name, _ := cmd.Flags().GetString("name")
 		if name == "" {
 			return cmd.Help()
 		}
 
+		// Read the application configuration and find the device with the specified name. If found, wake the device using its MAC address.
 		cfg := config.ReadConfig()
 		for _, d := range cfg.Devices {
 			if d.DeviceName == name {

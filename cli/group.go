@@ -13,11 +13,13 @@ var groupCmd = &cobra.Command{
 	Use:   "group",
 	Short: "Wake a group by name",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// Get the group name from the command flags and validate it.
 		name, _ := cmd.Flags().GetString("name")
 		if name == "" {
 			return cmd.Help()
 		}
 
+		// Read the application configuration and find the group with the specified name. If found, wake all devices in the group using their MAC addresses.
 		cfg := config.ReadConfig()
 		for _, g := range cfg.Groups {
 			if g.GroupName == name {

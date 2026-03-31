@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// rootCmd is the base command for the CLI application. It initializes the TUI program when executed.
 var rootCmd = &cobra.Command{
 	Use:          "wakey",
 	SilenceUsage: true,
@@ -24,11 +25,13 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+// init function adds the device and group commands to the root command of the CLI.
 func init() {
 	rootCmd.AddCommand(deviceCmd)
 	rootCmd.AddCommand(groupCmd)
 }
 
+// Execute initializes the application configuration and executes the root command of the CLI.
 func Execute() {
 	status.Message = config.CreateConfig()
 
