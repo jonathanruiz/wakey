@@ -90,6 +90,33 @@ var deviceCreateCmd = &cobra.Command{
 	},
 }
 
+var deviceStatusCmd = &cobra.Command{
+	Use:   "status",
+	Short: "Check if a device is online",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		name, _ := cmd.Flags().GetString("name")
+		if name == "" {
+			return fmt.Errorf("device name is required (-n)")
+		}
+
+		cfg := config.ReadConfig()
+		for _, d := range cfg.Devices {
+			if d.DeviceName == name {
+				if wol.IsOnline(d.IPAddress) {
+					fmt.Printf("%s is online\n", d.DeviceName)
+				} else {
+					fmt.Printf("%s is offline\n", d.DeviceName)
+				}
+				return nil
+			}
+		}
+
+		fmt.Fprintf(os.Stderr, "Device not found: %q\n", name)
+		os.Exit(1)
+		return nil
+	},
+}
+
 func init() {
 	deviceCmd.Flags().StringP("name", "n", "", "name of the device to wake")
 
@@ -98,5 +125,8 @@ func init() {
 	deviceCreateCmd.Flags().StringP("mac", "m", "", "MAC address (e.g. AA:BB:CC:DD:EE:FF)")
 	deviceCreateCmd.Flags().StringP("ip", "i", "", "IP address (e.g. 192.168.1.100)")
 
+	deviceStatusCmd.Flags().StringP("name", "n", "", "name of the device to check")
+
 	deviceCmd.AddCommand(deviceCreateCmd)
+	deviceCmd.AddCommand(deviceStatusCmd)
 }

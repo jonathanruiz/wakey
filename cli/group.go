@@ -7,6 +7,7 @@ import (
 	"wakey/internal/common/wol"
 	"wakey/internal/config"
 
+
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 )
@@ -96,11 +97,52 @@ var groupCreateCmd = &cobra.Command{
 	},
 }
 
+var groupStatusCmd = &cobra.Command{
+	Use:   "status",
+	Short: "Check if devices in a group are online",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		name, _ := cmd.Flags().GetString("name")
+		if name == "" {
+			return fmt.Errorf("group name is required (-n)")
+		}
+
+		cfg := config.ReadConfig()
+		for _, g := range cfg.Groups {
+			if g.GroupName == name {
+				deviceMap := make(map[string]config.Device)
+				for _, d := range cfg.Devices {
+					deviceMap[d.ID] = d
+				}
+
+				for _, id := range g.Devices {
+					d, ok := deviceMap[id]
+					if !ok {
+						continue
+					}
+					if wol.IsOnline(d.IPAddress) {
+						fmt.Printf("%s is online\n", d.DeviceName)
+					} else {
+						fmt.Printf("%s is offline\n", d.DeviceName)
+					}
+				}
+				return nil
+			}
+		}
+
+		fmt.Fprintf(os.Stderr, "Group not found: %q\n", name)
+		os.Exit(1)
+		return nil
+	},
+}
+
 func init() {
 	groupCmd.Flags().StringP("name", "n", "", "name of the group to wake")
 
 	groupCreateCmd.Flags().StringP("name", "n", "", "group name")
 	groupCreateCmd.Flags().StringP("devices", "d", "", "comma-separated list of device names to add to the group")
 
+	groupStatusCmd.Flags().StringP("name", "n", "", "name of the group to check")
+
 	groupCmd.AddCommand(groupCreateCmd)
+	groupCmd.AddCommand(groupStatusCmd)
 }
