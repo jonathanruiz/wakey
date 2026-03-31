@@ -3,7 +3,7 @@ package style
 import (
 	"os"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 	"golang.org/x/term"
 )
 

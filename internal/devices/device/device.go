@@ -6,11 +6,11 @@ import (
 	"wakey/internal/common/style"
 	"wakey/internal/config"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/google/uuid"
 )
 
@@ -54,8 +54,8 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 	// Loop through the inputs and create a new text input model for each
 	for i := range m.inputs {
 		ti = textinput.New()
-		ti.Cursor.Style = style.FocusedStyle
 		ti.CharLimit = 64
+		ti.SetWidth(style.TermWidth / 2)
 
 		switch i {
 		// Device name
@@ -63,8 +63,10 @@ func InitialModel(previousModel tea.Model, selectedRow ...[]string) Model {
 			ti.Prompt = "Device Name   : "
 			ti.Placeholder = "Enter the device name"
 			ti.Focus()
-			ti.PromptStyle = style.FocusedStyle
-			ti.TextStyle = style.FocusedStyle
+			s := ti.Styles()
+			s.Focused.Prompt = style.FocusedStyle
+			s.Focused.Text = style.FocusedStyle
+			ti.SetStyles(s)
 
 			if selectedRow != nil {
 				ti.SetValue(selectedRow[0][1])
@@ -224,14 +226,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if i == m.focusIndex {
 					// Set focused state
 					cmds[i] = m.inputs[i].Focus()
-					m.inputs[i].PromptStyle = style.FocusedStyle
-					m.inputs[i].TextStyle = style.FocusedStyle
+					fs := m.inputs[i].Styles()
+					fs.Focused.Prompt = style.FocusedStyle
+					fs.Focused.Text = style.FocusedStyle
+					m.inputs[i].SetStyles(fs)
 					continue
 				}
 				// Remove focused state
 				m.inputs[i].Blur()
-				m.inputs[i].PromptStyle = style.NoStyle
-				m.inputs[i].TextStyle = style.NoStyle
+				bs := m.inputs[i].Styles()
+				bs.Focused.Prompt = style.NoStyle
+				bs.Focused.Text = style.NoStyle
+				m.inputs[i].SetStyles(bs)
 			}
 
 			return m, tea.Batch(cmds...)
@@ -276,7 +282,7 @@ func (m *Model) updateInputs(msg tea.Msg) tea.Cmd {
 }
 
 // View function for the Device model
-func (m Model) View() string {
+func (m Model) View() tea.View {
 	// The header
 	s := "\n"
 
@@ -289,7 +295,7 @@ func (m Model) View() string {
 		// Check if there are any errors and if the errors are not nil
 		if len(m.err) > 0 && m.err[i] != nil {
 			// Display the error message inline with the first input field
-			// Refer to discussion: https://github.com/charmbracelet/bubbles/discussions/306
+			// Refer to discussion: https://charm.land/bubbles/v2/discussions/306
 			s += lipgloss.JoinHorizontal(lipgloss.Left, input.View()+"   ", style.ErrStyle(m.err[i].Error())) + "\n"
 		} else {
 			// Display the input field
@@ -307,7 +313,7 @@ func (m Model) View() string {
 	// Render the help text
 	s += m.help.View(m.keys)
 
-	return s
+	return tea.NewView(s)
 
 }
 
