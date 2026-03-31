@@ -62,8 +62,8 @@ func DefaultKeyMap() KeyMap {
 			key.WithHelp("d", "delete"),
 		),
 		Inspect: key.NewBinding(
-			key.WithKeys("v"),
-			key.WithHelp("v", "view"),
+			key.WithKeys("i"),
+			key.WithHelp("i", "inspect"),
 		),
 		View: key.NewBinding(
 			key.WithKeys("tab"),

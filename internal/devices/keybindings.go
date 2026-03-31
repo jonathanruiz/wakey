@@ -61,8 +61,8 @@ var keys = keyMap{
 		key.WithHelp("d", "delete device"),
 	),
 	Inspect: key.NewBinding(
-		key.WithKeys("v"),
-		key.WithHelp("v", "view device"),
+		key.WithKeys("i"),
+		key.WithHelp("i", "inspect device"),
 	),
 	View: key.NewBinding(
 		key.WithKeys("tab"),

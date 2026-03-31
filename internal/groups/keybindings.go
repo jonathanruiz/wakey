@@ -60,8 +60,8 @@ var keys = keyMap{
 		key.WithHelp("d", "delete group"),
 	),
 	Inspect: key.NewBinding(
-		key.WithKeys("v"),
-		key.WithHelp("v", "view group"),
+		key.WithKeys("i"),
+		key.WithHelp("i", "inspect group"),
 	),
 	View: key.NewBinding(
 		key.WithKeys("tab"),

@@ -1,4 +1,4 @@
-package group
+package device
 
 import (
 	"fmt"
@@ -23,14 +23,14 @@ func (k detailKeyMap) FullHelp() [][]key.Binding {
 
 var detailKeys = detailKeyMap{
 	Quit: key.NewBinding(
-		key.WithKeys("q", "esc", "v"),
+		key.WithKeys("q", "esc", "i"),
 		key.WithHelp("q/esc", "back"),
 	),
 }
 
 type DetailModel struct {
-	group         config.Group
-	deviceNames   []string
+	device        config.Device
+	groups        []string
 	previousModel tea.Model
 	help          help.Model
 	keys          detailKeyMap
@@ -39,31 +39,28 @@ type DetailModel struct {
 func InitialDetailModel(previousModel tea.Model, selectedRow []string) DetailModel {
 	cfg := config.ReadConfig()
 
-	// Resolve device IDs to names
-	deviceIDMap := make(map[string]string)
-	for _, d := range cfg.Devices {
-		deviceIDMap[d.ID] = d.DeviceName
+	device := config.Device{
+		ID:          selectedRow[0],
+		DeviceName:  selectedRow[1],
+		Description: selectedRow[2],
+		MacAddress:  selectedRow[3],
+		IPAddress:   selectedRow[4],
+		State:       selectedRow[5],
 	}
 
-	// Find the group from config to get device IDs
-	var grp config.Group
+	var groupNames []string
 	for _, g := range cfg.Groups {
-		if g.ID == selectedRow[0] {
-			grp = g
-			break
-		}
-	}
-
-	var deviceNames []string
-	for _, id := range grp.Devices {
-		if name, ok := deviceIDMap[id]; ok {
-			deviceNames = append(deviceNames, name)
+		for _, id := range g.Devices {
+			if id == device.ID {
+				groupNames = append(groupNames, g.GroupName)
+				break
+			}
 		}
 	}
 
 	return DetailModel{
-		group:         grp,
-		deviceNames:   deviceNames,
+		device:        device,
+		groups:        groupNames,
 		previousModel: previousModel,
 		help:          help.New(),
 		keys:          detailKeys,
@@ -83,18 +80,22 @@ func (m DetailModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m DetailModel) View() tea.View {
-	header := style.FocusedTab.Render("Groups > " + m.group.GroupName)
+	header := style.FocusedTab.Render("Devices > " + m.device.DeviceName)
 	s := lipgloss.PlaceHorizontal(style.TermWidth, lipgloss.Center, header) + "\n\n"
 
 	label := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("98")).Width(16)
 
-	devicesVal := "None"
-	if len(m.deviceNames) > 0 {
-		devicesVal = strings.Join(m.deviceNames, ", ")
-	}
+	s += fmt.Sprintf("%s %s\n", label.Render("Device Name"), m.device.DeviceName)
+	s += fmt.Sprintf("%s %s\n", label.Render("Description"), m.device.Description)
+	s += fmt.Sprintf("%s %s\n", label.Render("MAC Address"), m.device.MacAddress)
+	s += fmt.Sprintf("%s %s\n", label.Render("IP Address"), m.device.IPAddress)
+	s += fmt.Sprintf("%s %s\n", label.Render("State"), m.device.State)
 
-	s += fmt.Sprintf("%s %s\n", label.Render("Group Name"), m.group.GroupName)
-	s += fmt.Sprintf("%s %s\n", label.Render("Devices"), devicesVal)
+	groupsVal := "None"
+	if len(m.groups) > 0 {
+		groupsVal = strings.Join(m.groups, ", ")
+	}
+	s += fmt.Sprintf("%s %s\n", label.Render("Groups"), groupsVal)
 
 	s += "\n" + m.help.View(m.keys)
 
