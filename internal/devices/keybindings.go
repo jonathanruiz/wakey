@@ -11,6 +11,7 @@ type keyMap struct {
 	Create  key.Binding
 	Edit    key.Binding
 	Delete  key.Binding
+	Inspect key.Binding
 	View    key.Binding
 	Refresh key.Binding
 	Help    key.Binding
@@ -27,9 +28,9 @@ func (k keyMap) ShortHelp() []key.Binding {
 // key.Map interface.
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down}, // first column
-		{k.Enter, k.Create, k.Edit, k.Delete, k.Refresh}, // second column
-		{k.Help, k.View, k.Quit},                         // third column
+		{k.Up, k.Down},                                          // first column
+		{k.Enter, k.Create, k.Edit, k.Delete, k.Inspect, k.Refresh}, // second column
+		{k.Help, k.View, k.Quit},                                // third column
 	}
 }
 
@@ -58,6 +59,10 @@ var keys = keyMap{
 	Delete: key.NewBinding(
 		key.WithKeys("d"),
 		key.WithHelp("d", "delete device"),
+	),
+	Inspect: key.NewBinding(
+		key.WithKeys("i"),
+		key.WithHelp("i", "inspect device"),
 	),
 	View: key.NewBinding(
 		key.WithKeys("tab"),
