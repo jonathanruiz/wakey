@@ -1,0 +1,13 @@
+name: "wakey"
+arch: "${ARCH}"
+version: "${VERSION}"
+maintainer: "Jonathan Ruiz"
+description: "A TUI built for managing and waking your devices using Wake-on-LAN."
+homepage: "https://github.com/jonathanruiz/wakey"
+license: "MIT"
+
+contents:
+  - src: "./${BINARY}"
+    dst: "/usr/bin/wakey"
+    file_info:
+      mode: 0755

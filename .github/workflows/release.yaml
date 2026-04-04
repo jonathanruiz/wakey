@@ -29,12 +29,40 @@ jobs:
           GOOS=darwin GOARCH=amd64 go build -o ${{ env.APP_NAME }}_darwin_amd64 -v
           GOOS=darwin GOARCH=arm64 go build -o ${{ env.APP_NAME }}_darwin_arm64 -v
           GOOS=windows GOARCH=amd64 go build -o ${{ env.APP_NAME }}_windows_amd64.exe -v
+          GOOS=windows GOARCH=arm64 go build -o ${{ env.APP_NAME }}_windows_arm64.exe -v
 
       - name: Test
         run: go test ./tests/... -v
 
-      - name: Print SHA for Homebrew
-        run: shasum -a 256 ${{ env.APP_NAME }}_linux_amd64 ${{ env.APP_NAME }}_linux_arm64 ${{ env.APP_NAME }}_darwin_amd64 ${{ env.APP_NAME }}_darwin_arm64 ${{ env.APP_NAME }}_windows_amd64.exe > sha256checksums.txt
+      - name: Install nfpm
+        run: |
+          echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
+          sudo apt update
+          sudo apt install -y nfpm
+
+      - name: Build Linux packages
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+
+          ARCH=amd64 BINARY=${{ env.APP_NAME }}_linux_amd64 VERSION=$VERSION nfpm pkg --packager deb --target ${{ env.APP_NAME }}_linux_amd64.deb
+          ARCH=amd64 BINARY=${{ env.APP_NAME }}_linux_amd64 VERSION=$VERSION nfpm pkg --packager rpm --target ${{ env.APP_NAME }}_linux_amd64.rpm
+          ARCH=arm64 BINARY=${{ env.APP_NAME }}_linux_arm64 VERSION=$VERSION nfpm pkg --packager deb --target ${{ env.APP_NAME }}_linux_arm64.deb
+          ARCH=arm64 BINARY=${{ env.APP_NAME }}_linux_arm64 VERSION=$VERSION nfpm pkg --packager rpm --target ${{ env.APP_NAME }}_linux_arm64.rpm
+
+      - name: Generate checksums
+        run: |
+          shasum -a 256 \
+            ${{ env.APP_NAME }}_linux_amd64 \
+            ${{ env.APP_NAME }}_linux_arm64 \
+            ${{ env.APP_NAME }}_linux_amd64.deb \
+            ${{ env.APP_NAME }}_linux_arm64.deb \
+            ${{ env.APP_NAME }}_linux_amd64.rpm \
+            ${{ env.APP_NAME }}_linux_arm64.rpm \
+            ${{ env.APP_NAME }}_darwin_amd64 \
+            ${{ env.APP_NAME }}_darwin_arm64 \
+            ${{ env.APP_NAME }}_windows_amd64.exe \
+            ${{ env.APP_NAME }}_windows_arm64.exe \
+            > sha256checksums.txt
 
       - name: Create release and attach artifacts
         uses: softprops/action-gh-release@v2
@@ -43,9 +71,15 @@ jobs:
           files: |
             ${{ env.APP_NAME }}_linux_amd64
             ${{ env.APP_NAME }}_linux_arm64
+            ${{ env.APP_NAME }}_linux_amd64.deb
+            ${{ env.APP_NAME }}_linux_arm64.deb
+            ${{ env.APP_NAME }}_linux_amd64.rpm
+            ${{ env.APP_NAME }}_linux_arm64.rpm
             ${{ env.APP_NAME }}_darwin_amd64
             ${{ env.APP_NAME }}_darwin_arm64
             ${{ env.APP_NAME }}_windows_amd64.exe
+            ${{ env.APP_NAME }}_windows_arm64.exe
+            install.sh
             sha256checksums.txt
 
       - name: Create Homebrew formula
@@ -94,3 +128,53 @@ jobs:
           git add ./${{ env.APP_NAME }}.rb
           git commit -m "Update formula for ${{ github.ref_name }}"
           git push https://x-access-token:${{ secrets.HOMEBREW_TAP_TOKEN }}@github.com/${{ env.USERNAME }}/homebrew-tap.git HEAD:main
+
+      - name: Update AUR package
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          SHA256_X86_64=$(grep "${{ env.APP_NAME }}_linux_amd64 " sha256checksums.txt | awk '{ print $1 }')
+          SHA256_AARCH64=$(grep "${{ env.APP_NAME }}_linux_arm64 " sha256checksums.txt | awk '{ print $1 }')
+
+          cat > PKGBUILD << EOF
+          # Maintainer: Jonathan Ruiz
+          pkgname=${{ env.APP_NAME }}
+          pkgver=${VERSION}
+          pkgrel=1
+          pkgdesc="A TUI built for managing and waking your devices using Wake-on-LAN."
+          arch=('x86_64' 'aarch64')
+          url="https://github.com/${{ env.USERNAME }}/${{ env.APP_NAME }}"
+          license=('MIT')
+          source_x86_64=("https://github.com/${{ env.USERNAME }}/${{ env.APP_NAME }}/releases/download/v${VERSION}/${{ env.APP_NAME }}_linux_amd64")
+          source_aarch64=("https://github.com/${{ env.USERNAME }}/${{ env.APP_NAME }}/releases/download/v${VERSION}/${{ env.APP_NAME }}_linux_arm64")
+          sha256sums_x86_64=('${SHA256_X86_64}')
+          sha256sums_aarch64=('${SHA256_AARCH64}')
+
+          package() {
+              if [ "\$CARCH" = "x86_64" ]; then
+                  install -Dm755 "\$srcdir/${{ env.APP_NAME }}_linux_amd64" "\$pkgdir/usr/bin/${{ env.APP_NAME }}"
+              else
+                  install -Dm755 "\$srcdir/${{ env.APP_NAME }}_linux_arm64" "\$pkgdir/usr/bin/${{ env.APP_NAME }}"
+              fi
+          }
+          EOF
+
+      - name: Push PKGBUILD to AUR
+        uses: KSXGitHub/github-actions-deploy-aur@v3.0.2
+        with:
+          pkgname: ${{ env.APP_NAME }}
+          pkgbuild: ./PKGBUILD
+          commit_username: github-actions[bot]
+          commit_email: github-actions[bot]@users.noreply.github.com
+          ssh_private_key: ${{ secrets.AUR_SSH_KEY }}
+          commit_message: Update to ${{ github.ref_name }}
+          allow_empty_commits: false
+
+      - name: Submit to winget
+        run: |
+          dotnet tool install --global wingetcreate
+          wingetcreate update ${{ env.USERNAME }}.${{ env.APP_NAME }} \
+            --version ${{ github.ref_name }} \
+            --urls "https://github.com/${{ env.USERNAME }}/${{ env.APP_NAME }}/releases/download/${{ github.ref_name }}/${{ env.APP_NAME }}_windows_amd64.exe" \
+                   "https://github.com/${{ env.USERNAME }}/${{ env.APP_NAME }}/releases/download/${{ github.ref_name }}/${{ env.APP_NAME }}_windows_arm64.exe" \
+            --submit \
+            --token ${{ secrets.WINGET_TOKEN }}
